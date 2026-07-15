@@ -1,0 +1,11 @@
+.idea/
+.vscode/
+target/
+.m2-cache/
+*.iml
+.env
+logs/
+data/
+
+### Maven Wrapper local distribution/cache
+.mvn/wrapper/maven-wrapper.jar

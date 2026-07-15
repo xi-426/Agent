@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>企业知识库智能 Agent</title>
+    <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<main class="shell">
+    <header>
+        <p class="eyebrow">LESSON 01 · 普通模型对话</p>
+        <h1>企业知识库智能 Agent</h1>
+        <p>当前只接通了普通对话；知识库、工单工具和流式输出会在后续课程逐步加入。</p>
+    </header>
+
+    <section id="messages" class="messages" aria-live="polite">
+        <article class="message assistant">
+            <span>助手</span>
+            <p>你好！请先在PowerShell配置DeepSeek API Key，然后向我发送一条消息。</p>
+        </article>
+    </section>
+
+    <form id="chat-form">
+        <label for="message">你的问题</label>
+        <textarea id="message" maxlength="4000" required
+                  placeholder="例如：请用三句话解释什么是RAG"></textarea>
+        <div class="actions">
+            <small id="status">就绪</small>
+            <button id="send-button" type="submit">发送</button>
+        </div>
+    </form>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
+
