@@ -159,17 +159,3 @@ docker compose --profile application up -d --build
 ```
 
 响应头也包含 `X-Request-Id`。后端日志会记录同一个编号以及请求方法、路径、状态码和耗时，但不会记录密码、Token 或请求正文。
-
-## 项目资料
-
-- [架构与数据流](docs/ARCHITECTURE.md)
-- [Postman 演示脚本](docs/DEMO_GUIDE.md)
-- [RAG 固定评测集](docs/RAG_EVALUATION.md)
-
-## 已知边界
-
-- 当前是单体应用，适合学习、作品演示和小规模内部验证，不等同于生产级多租户 SaaS。
-- RAG 使用固定阈值和可解释的轻量混合重排；上线前应使用真实业务数据持续评测。
-- 原始文件保存在本地目录或 Docker volume，生产环境可替换为对象存储。
-- JWT 使用单一 HS256 密钥，生产环境应接入专用密钥管理、轮换和撤销机制。
-- 演示前端把 JWT 保存在浏览器 `localStorage`；正式生产环境应结合威胁模型改用 HttpOnly Cookie/BFF，并完善 CSP 与 XSS 防护。
