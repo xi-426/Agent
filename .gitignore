@@ -9,3 +9,27 @@ data/
 
 ### Maven Wrapper local distribution/cache
 .mvn/wrapper/maven-wrapper.jar
+
+data/uploads/
+
+### Local Codex instructions and private learning materials
+/AGENTS.md
+/.agents/
+/.codex/
+
+# Learning progress, handoff, error and interview-preparation documents
+/docs/DAILY_SUMMARY.md
+/docs/ERROR_LOG.md
+/docs/LEARNING_PLAN.md
+/docs/PROJECT_CONTEXT.md
+/docs/INTERVIEW_*.md
+/docs/RESUME_AND_INTERVIEW.md
+/docs/lesson-*.md
+/docs/project-roadmap.md
+/docs/PROJECT_FLOW_TEACHING.png
+/docs/PROJECT_FLOW_TEACHING.svg
+/docs/项目面试准备.md
+/docs/个人项目网站素材准备清单.md
+
+# Private local Docker Compose configuration
+/compose.local.yaml
