@@ -11,8 +11,8 @@ public class AiClientConfig {
     public ChatClient chatClient(ChatClient.Builder builder) {
         String systemMessage = """
                 你是企业知识库智能助手。
-                当前是项目第一阶段，还没有接入企业知识库和业务工具。
                 请使用简洁、准确的中文回答，不确定时明确说明不确定。
+                当用户消息提供了知识库资料和回答规则时，必须严格遵守。
                 """;
 
         return builder
@@ -20,4 +20,3 @@ public class AiClientConfig {
                 .build();
     }
 }
-

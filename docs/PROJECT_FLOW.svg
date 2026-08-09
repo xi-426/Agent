@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1180" viewBox="0 0 1700 1180">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6faf8"/>
+      <stop offset="1" stop-color="#eef3f7"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#18cf6b"/>
+      <stop offset="1" stop-color="#079d4d"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#234033" flood-opacity=".13"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#718078"/>
+    </marker>
+    <style>
+      .title { font: 700 35px "Microsoft YaHei", sans-serif; fill: #18241e; }
+      .subtitle { font: 400 17px "Microsoft YaHei", sans-serif; fill: #6f7c75; }
+      .lane-title { font: 700 21px "Microsoft YaHei", sans-serif; fill: #26342d; }
+      .box-title { font: 700 18px "Microsoft YaHei", sans-serif; fill: #1f2e27; }
+      .box-copy { font: 400 15px "Microsoft YaHei", sans-serif; fill: #5e6a64; }
+      .white-title { font: 700 19px "Microsoft YaHei", sans-serif; fill: white; }
+      .white-copy { font: 400 14px "Microsoft YaHei", sans-serif; fill: #eafff1; }
+      .small { font: 400 14px "Microsoft YaHei", sans-serif; fill: #66746d; }
+      .badge { font: 700 13px "Microsoft YaHei", sans-serif; fill: #078b45; }
+      .line { fill: none; stroke: #718078; stroke-width: 2.5; marker-end: url(#arrow); }
+      .dash { fill: none; stroke: #9aa69f; stroke-width: 2; stroke-dasharray: 8 7; marker-end: url(#arrow); }
+      .card { fill: white; stroke: #dce5e0; stroke-width: 1.5; filter: url(#shadow); }
+    </style>
+  </defs>
+
+  <rect width="1700" height="1180" fill="url(#background)"/>
+
+  <text x="70" y="62" class="title">企业知识库智能 Agent：完整数据流</text>
+  <text x="70" y="94" class="subtitle">绿色是入口与安全，蓝色是模型，紫色是存储，橙色是确定性写操作</text>
+
+  <!-- Frontend and security -->
+  <rect x="70" y="125" width="1560" height="112" rx="22" fill="url(#green)" filter="url(#shadow)"/>
+  <text x="110" y="169" class="white-title">浏览器 · 微信风格工作台</text>
+  <text x="110" y="202" class="white-copy">注册登录 · Agent 会话 · 文档上传 · RAG 问答 · 固定评测</text>
+  <rect x="1120" y="151" width="465" height="60" rx="15" fill="#ffffff" fill-opacity=".16" stroke="#ffffff" stroke-opacity=".35"/>
+  <text x="1150" y="177" class="white-title">Spring Security</text>
+  <text x="1150" y="200" class="white-copy">验证 JWT → 得到可信 userId → Controller</text>
+
+  <path d="M850 237 L850 279" class="line"/>
+
+  <!-- Lane headers -->
+  <rect x="70" y="286" width="500" height="54" rx="14" fill="#e8f2ff"/>
+  <text x="95" y="321" class="lane-title">A. Agent 会话与工单</text>
+
+  <rect x="600" y="286" width="500" height="54" rx="14" fill="#eaf9f0"/>
+  <text x="625" y="321" class="lane-title">B. 文档入库</text>
+
+  <rect x="1130" y="286" width="500" height="54" rx="14" fill="#f1ecff"/>
+  <text x="1155" y="321" class="lane-title">C. RAG 问答与评测</text>
+
+  <!-- Agent lane -->
+  <rect x="70" y="370" width="500" height="100" rx="18" class="card"/>
+  <text x="95" y="408" class="box-title">ChatController → AiChatService</text>
+  <text x="95" y="438" class="box-copy">检查会话所有权、用户限流、识别确认口令</text>
+
+  <path d="M320 470 L320 515" class="line"/>
+
+  <rect x="70" y="525" width="235" height="112" rx="18" class="card"/>
+  <text x="95" y="562" class="box-title">普通对话 / 查询</text>
+  <text x="95" y="590" class="box-copy">读取最近 20 条消息</text>
+  <text x="95" y="615" class="box-copy">交给 DeepSeek 判断</text>
+
+  <rect x="335" y="525" width="235" height="112" rx="18" fill="#fff7e9" stroke="#f0c77d" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="360" y="562" class="box-title">创建工单</text>
+  <text x="360" y="590" class="box-copy">Java 解析标题/描述</text>
+  <text x="360" y="615" class="box-copy">不让模型决定写操作</text>
+
+  <path d="M187 637 L187 682" class="line"/>
+  <path d="M452 637 L452 682" class="line"/>
+
+  <rect x="70" y="692" width="235" height="120" rx="18" fill="#eaf3ff" stroke="#9fc3ed" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="95" y="730" class="box-title">DeepSeek Chat</text>
+  <text x="95" y="758" class="box-copy">理解问题、组织语言</text>
+  <text x="95" y="784" class="box-copy">只读查询可 Tool Calling</text>
+
+  <rect x="335" y="692" width="235" height="120" rx="18" fill="#fff2df" stroke="#e9ad52" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="360" y="730" class="box-title">Redis 待确认</text>
+  <text x="360" y="758" class="box-copy">保存 10 分钟</text>
+  <text x="360" y="784" class="box-copy">等待“确认创建工单”</text>
+
+  <path d="M187 812 L187 858" class="line"/>
+  <path d="M452 812 L452 858" class="line"/>
+
+  <rect x="70" y="868" width="235" height="126" rx="18" fill="#f0ebff" stroke="#bca9eb" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="95" y="906" class="box-title">Redis + PostgreSQL</text>
+  <text x="95" y="935" class="box-copy">Redis：短期记忆</text>
+  <text x="95" y="961" class="box-copy">PostgreSQL：永久历史</text>
+
+  <rect x="335" y="868" width="235" height="126" rx="18" fill="#fff2df" stroke="#e9ad52" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="360" y="906" class="box-title">PostgreSQL INSERT</text>
+  <text x="360" y="935" class="box-copy">完整口令后才创建</text>
+  <text x="360" y="961" class="box-copy">返回真实工单编号</text>
+
+  <!-- Ingestion lane -->
+  <rect x="600" y="370" width="500" height="100" rx="18" class="card"/>
+  <text x="625" y="408" class="box-title">DocumentController → IngestionService</text>
+  <text x="625" y="438" class="box-copy">检查知识库 ownerId，统一编排整个入库过程</text>
+  <path d="M850 470 L850 515" class="line"/>
+
+  <rect x="600" y="525" width="500" height="112" rx="18" class="card"/>
+  <text x="625" y="562" class="box-title">校验 + 文件保存</text>
+  <text x="625" y="590" class="box-copy">大小 / 后缀 / MIME Type → data/uploads UUID 文件名</text>
+  <text x="625" y="615" class="box-copy">原始中文文件名保存在 document 表</text>
+  <path d="M850 637 L850 682" class="line"/>
+
+  <rect x="600" y="692" width="500" height="120" rx="18" class="card"/>
+  <text x="625" y="730" class="box-title">Tika 解析 → Cleaner 清洗 → Chunker 切片</text>
+  <text x="625" y="758" class="box-copy">目标约 800 字符，重叠约 120 字符</text>
+  <text x="625" y="784" class="box-copy">尽量从段落、换行和句末边界切开</text>
+  <path d="M850 812 L850 858" class="line"/>
+
+  <rect x="600" y="868" width="235" height="126" rx="18" fill="#eaf3ff" stroke="#9fc3ed" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="625" y="906" class="box-title">Ollama bge-m3</text>
+  <text x="625" y="935" class="box-copy">文字 → 1024 维向量</text>
+  <text x="625" y="961" class="box-copy">Embedding 模型</text>
+
+  <path d="M835 931 L875 931" class="line"/>
+
+  <rect x="875" y="868" width="225" height="126" rx="18" fill="#f0ebff" stroke="#bca9eb" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="900" y="906" class="box-title">PostgreSQL pgvector</text>
+  <text x="900" y="935" class="box-copy">保存文字和向量</text>
+  <text x="900" y="961" class="box-copy">HNSW 相似度检索</text>
+
+  <!-- RAG lane -->
+  <rect x="1130" y="370" width="500" height="100" rx="18" class="card"/>
+  <text x="1155" y="408" class="box-title">RagController → RagService</text>
+  <text x="1155" y="438" class="box-copy">当前 JWT 用户只能访问自己的知识库</text>
+  <path d="M1380 470 L1380 515" class="line"/>
+
+  <rect x="1130" y="525" width="500" height="112" rx="18" fill="#eaf3ff" stroke="#9fc3ed" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1155" y="562" class="box-title">问题 → bge-m3 → 问题向量</text>
+  <text x="1155" y="590" class="box-copy">问题和文档必须使用同一个 Embedding 模型</text>
+  <text x="1155" y="615" class="box-copy">这样向量才位于同一个语义空间</text>
+  <path d="M1380 637 L1380 682" class="line"/>
+
+  <rect x="1130" y="692" width="500" height="120" rx="18" fill="#f0ebff" stroke="#bca9eb" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1155" y="730" class="box-title">pgvector 召回 6 个候选</text>
+  <text x="1155" y="758" class="box-copy">distance ≤ 0.65 → 混合重排 → 最终 3 个证据</text>
+  <text x="1155" y="784" class="box-copy">80% 向量相似度 + 20% 中文二字组覆盖率</text>
+  <path d="M1380 812 L1380 858" class="line"/>
+
+  <rect x="1130" y="868" width="235" height="126" rx="18" fill="#eaf3ff" stroke="#9fc3ed" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1155" y="906" class="box-title">DeepSeek 生成</text>
+  <text x="1155" y="935" class="box-copy">严格根据证据回答</text>
+  <text x="1155" y="961" class="box-copy">资料不足时拒答</text>
+
+  <path d="M1365 931 L1405 931" class="line"/>
+
+  <rect x="1405" y="868" width="225" height="126" rx="18" fill="#eaf9f0" stroke="#92d8af" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1430" y="906" class="box-title">返回浏览器</text>
+  <text x="1430" y="935" class="box-copy">answer + sources</text>
+  <text x="1430" y="961" class="box-copy">文档/切片/距离</text>
+
+  <!-- Cross-lane relation -->
+  <path d="M987 994 C1100 1085, 1280 1085, 1517 994" class="dash"/>
+  <rect x="1080" y="1027" width="360" height="45" rx="22" fill="#ffffff" stroke="#dce5e0"/>
+  <text x="1110" y="1056" class="small">入库产生的向量，供 RAG 检索使用</text>
+
+  <!-- Bottom explanation -->
+  <rect x="70" y="1088" width="1560" height="62" rx="16" fill="#26342d"/>
+  <text x="100" y="1127" class="white-title">关键边界：</text>
+  <text x="225" y="1127" class="white-copy">模型负责理解和生成；Java 负责权限、规则、确认与写操作；存储系统只承担各自的数据职责。</text>
+</svg>

@@ -1,12 +1,50 @@
 spring:
   application:
     name: enterprise-agent
+
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/enterprise_agent}
+    username: ${POSTGRES_USER:agent}
+    password: ${POSTGRES_PASSWORD:agent_local_password}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+
   ai:
+    model:
+      chat: openai
+      embedding: ollama
+
     openai:
       api-key: ${DEEPSEEK_API_KEY:demo-key-not-configured}
       base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
       chat:
         model: ${DEEPSEEK_CHAT_MODEL:deepseek-v4-flash}
+
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      embedding:
+        model: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 server:
   port: 8080
@@ -16,9 +54,42 @@ management:
     web:
       exposure:
         include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Enterprise knowledge base and work-order Agent
+    version: 0.0.1-SNAPSHOT
 
 logging:
+  pattern:
+    level: "%5p [requestId:%X{requestId:-system}]"
   level:
     root: INFO
     com.yan.agent: DEBUG
 
+app:
+  document:
+    storage-root: ${DOCUMENT_STORAGE_ROOT:./data/uploads}
+    max-size-bytes: 10485760
+    chunk-size: 800
+    chunk-overlap: 120
+  rag:
+    top-k: 3
+    candidate-k: 6
+    max-distance: 0.65
+  chat-memory:
+    max-messages: 20
+    ttl-minutes: 1440
+  work-order:
+    confirmation-ttl-minutes: 10
+  security:
+    jwt-secret: ${JWT_SECRET:local-development-jwt-secret-must-be-at-least-32-bytes}
+    jwt-ttl-minutes: 120
+    max-chat-requests-per-minute: 20

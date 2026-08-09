@@ -23,10 +23,19 @@ class ApplicationSmokeTest {
     @Test
     void shouldServeHomePageAndHealthEndpoint() throws IOException, InterruptedException {
         HttpResponse<String> homeResponse = get("/");
+        HttpResponse<String> workspaceScriptResponse = get("/workspace.js");
         HttpResponse<String> healthResponse = get("/actuator/health");
 
         assertThat(homeResponse.statusCode()).isEqualTo(200);
         assertThat(homeResponse.body()).contains("企业知识库智能 Agent");
+        assertThat(homeResponse.body()).contains("workspace.js");
+        assertThat(workspaceScriptResponse.statusCode()).isEqualTo(200);
+        assertThat(workspaceScriptResponse.body())
+                .contains("EVALUATION_CASES")
+                .contains("/api/v1/chat/sessions")
+                .contains("/documents")
+                .contains("/rag/ask")
+                .contains("/evaluations/retrieval");
         assertThat(healthResponse.statusCode()).isEqualTo(200);
         assertThat(healthResponse.body()).contains("UP");
     }
@@ -45,6 +54,21 @@ class ApplicationSmokeTest {
 
         assertThat(response.statusCode()).isEqualTo(503);
         assertThat(response.body()).contains("DEEPSEEK_API_KEY");
+    }
+
+    @Test
+    void shouldReturnStructuredUnauthorizedResponseWithRequestId()
+            throws IOException, InterruptedException {
+        HttpResponse<String> response = get("/api/v1/knowledge-bases");
+
+        String requestId = response.headers()
+                .firstValue("X-Request-Id")
+                .orElseThrow();
+
+        assertThat(response.statusCode()).isEqualTo(401);
+        assertThat(response.body())
+                .contains("请先登录或提供有效的访问令牌")
+                .contains(requestId);
     }
 
     private HttpResponse<String> get(String path) throws IOException, InterruptedException {
@@ -69,4 +93,3 @@ class ApplicationSmokeTest {
         return "http://localhost:" + port + path;
     }
 }
-

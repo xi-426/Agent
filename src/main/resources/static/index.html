@@ -3,36 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#07c160">
     <title>企业知识库智能 Agent</title>
-    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/app.css?v=3">
 </head>
 <body>
-<main class="shell">
-    <header>
-        <p class="eyebrow">LESSON 01 · 普通模型对话</p>
-        <h1>企业知识库智能 Agent</h1>
-        <p>当前只接通了普通对话；知识库、工单工具和流式输出会在后续课程逐步加入。</p>
-    </header>
+<main class="wechat-app">
+    <aside class="app-rail" aria-label="主导航">
+        <div class="brand-mark" aria-label="企业智能助手">AI</div>
 
-    <section id="messages" class="messages" aria-live="polite">
-        <article class="message assistant">
-            <span>助手</span>
-            <p>你好！请先在PowerShell配置DeepSeek API Key，然后向我发送一条消息。</p>
-        </article>
+        <nav class="rail-nav">
+            <button class="rail-button active" type="button" data-view="chat" aria-label="Agent 对话" title="Agent 对话">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-5a3 3 0 0 1-1-2V7a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3z"/>
+                </svg>
+                <span class="nav-badge">1</span>
+            </button>
+            <button class="rail-button" type="button" data-view="knowledge" aria-label="知识库" title="知识库">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z"/>
+                    <path d="M5 4.5v17M9 7h7M9 11h7"/>
+                </svg>
+            </button>
+            <button class="rail-button" type="button" data-view="evaluation" aria-label="RAG 评测" title="RAG 评测">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+                    <path d="m8 12 2.5 2.5L16 9"/>
+                </svg>
+            </button>
+        </nav>
+
+        <button id="account-button" class="rail-button rail-settings" type="button" aria-label="退出登录" title="退出登录">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1v.1h-4v-.1a1.7 1.7 0 0 0-1.06-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1-.4h-.1v-4H3A1.7 1.7 0 0 0 4.56 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1v-.1h4V3A1.7 1.7 0 0 0 15.5 4.56a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.36.33.7.6 1 .28.27.63.4 1 .4h.1v4H21a1.7 1.7 0 0 0-1.6.6z"/>
+            </svg>
+        </button>
+    </aside>
+
+    <aside class="conversation-panel">
+        <header class="panel-header">
+            <div>
+                <p id="panel-kicker" class="panel-kicker">ENTERPRISE AGENT</p>
+                <h1 id="panel-title">会话</h1>
+            </div>
+            <button id="new-resource-button" class="icon-button" type="button" aria-label="新建会话" title="新建会话">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+            </button>
+        </header>
+
+        <label class="search-box" for="sidebar-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6"/>
+                <path d="m16 16 4 4"/>
+            </svg>
+            <input id="sidebar-search" type="search" placeholder="搜索会话">
+        </label>
+
+        <section id="sidebar-list" class="conversation-list" aria-label="资源列表">
+            <div class="sidebar-loading">正在载入…</div>
+        </section>
+
+        <footer class="panel-footer">
+            <span class="status-dot"></span>
+            <span id="current-user-label">游客模式</span>
+        </footer>
+    </aside>
+
+    <section class="workspace">
+    <section id="view-chat" class="chat-pane app-view active">
+        <header class="chat-header">
+            <div class="chat-identity">
+                <strong id="chat-title">临时流式对话</strong>
+                <span id="chat-subtitle"><i></i>无需登录 · 不保存记录</span>
+            </div>
+            <div class="chat-actions" aria-label="当前会话能力">
+                <span class="capability-pill">记忆</span>
+                <span class="capability-pill">Tool Calling</span>
+            </div>
+        </header>
+
+        <section id="messages" class="messages" aria-live="polite" aria-label="聊天消息">
+            <div class="message-date">今天</div>
+            <article class="message-row assistant">
+                <span class="avatar avatar-agent" aria-hidden="true">智</span>
+                <div class="message-content">
+                    <span class="sender-name">企业知识助手</span>
+                    <div class="message-bubble">
+                        <p>你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用长期记忆、工单查询和二次确认创建。</p>
+                    </div>
+                    <time>现在</time>
+                </div>
+            </article>
+        </section>
+
+        <form id="chat-form" class="composer">
+            <div id="agent-quick-actions" class="composer-toolbar">
+                <button class="quick-action" type="button" data-prompt="查询我的工单">查询我的工单</button>
+                <button class="quick-action" type="button"
+                        data-prompt="帮我创建一个高优先级工单，标题是“”，描述是“”。">创建工单</button>
+                <button class="quick-action" type="button" data-prompt="请记住，我今天正在学习企业知识库 Agent">测试记忆</button>
+            </div>
+
+            <label class="sr-only" for="message">输入消息</label>
+            <textarea id="message" maxlength="4000" required rows="1"
+                      placeholder="输入消息，按 Enter 发送"></textarea>
+
+            <div class="composer-footer">
+                <div class="composer-state">
+                    <small id="status">就绪</small>
+                    <span class="character-count"><b id="character-count">0</b>/4000</span>
+                </div>
+                <div class="send-area">
+                    <span>Shift + Enter 换行</span>
+                    <button id="send-button" type="submit">
+                        <span>发送</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4 14-3-5zM12 14l7-9"/></svg>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
+    <section id="view-knowledge" class="knowledge-view app-view">
+        <header class="workspace-header">
+            <div>
+                <p class="workspace-kicker">KNOWLEDGE BASE</p>
+                <h2 id="knowledge-title">请选择知识库</h2>
+                <p id="knowledge-description">创建或选择左侧知识库后，即可上传文档并进行 RAG 问答。</p>
+            </div>
+            <span id="knowledge-id-badge" class="id-badge">未选择</span>
+        </header>
+
+        <div id="knowledge-empty" class="workspace-empty">
+            <span class="empty-icon">知</span>
+            <h3>还没有选择知识库</h3>
+            <p>登录后点击左侧加号创建知识库，或者从列表选择已有知识库。</p>
+            <button id="empty-create-kb" class="primary-button" type="button">创建知识库</button>
+        </div>
+
+        <div id="knowledge-content" class="knowledge-content" hidden>
+            <section class="document-card panel-card">
+                <div class="card-heading">
+                    <div>
+                        <span class="card-kicker">DOCUMENTS</span>
+                        <h3>知识文档</h3>
+                    </div>
+                    <span id="document-count" class="count-badge">0 份</span>
+                </div>
+
+                <form id="upload-form" class="upload-form">
+                    <label class="file-drop" for="document-file">
+                        <span class="file-drop-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 14v5h14v-5"/></svg>
+                        </span>
+                        <span>
+                            <strong id="file-label">选择 PDF、DOCX、TXT 或 Markdown</strong>
+                            <small>文件最大 10 MB，上传后自动解析、切片并向量化</small>
+                        </span>
+                        <input id="document-file" type="file" required
+                               accept=".pdf,.docx,.txt,.md,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                    </label>
+                    <button id="upload-button" class="primary-button" type="submit">上传并处理</button>
+                </form>
+
+                <div id="document-list" class="document-list"></div>
+            </section>
+
+            <section class="rag-card panel-card">
+                <div class="card-heading">
+                    <div>
+                        <span class="card-kicker">RAG CHAT</span>
+                        <h3>根据知识库提问</h3>
+                    </div>
+                    <span class="online-label"><i></i>引用回答</span>
+                </div>
+
+                <div id="rag-messages" class="rag-messages" aria-live="polite">
+                    <div class="rag-welcome">问题会先经过向量召回、距离过滤和重排，再交给模型回答。</div>
+                </div>
+
+                <form id="rag-form" class="rag-form">
+                    <label class="sr-only" for="rag-question">知识库问题</label>
+                    <textarea id="rag-question" maxlength="1000" required rows="2"
+                              placeholder="例如：L4 严格机密数据包括哪些内容？"></textarea>
+                    <button id="rag-send-button" type="submit" aria-label="发送 RAG 问题">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4 14-3-5zM12 14l7-9"/></svg>
+                    </button>
+                </form>
+            </section>
+        </div>
     </section>
 
-    <form id="chat-form">
-        <label for="message">你的问题</label>
-        <textarea id="message" maxlength="4000" required
-                  placeholder="例如：请用三句话解释什么是RAG"></textarea>
-        <div class="actions">
-            <small id="status">就绪</small>
-            <button id="send-button" type="submit">发送</button>
+    <section id="view-evaluation" class="evaluation-view app-view">
+        <header class="workspace-header evaluation-header">
+            <div>
+                <p class="workspace-kicker">RAG EVALUATION</p>
+                <h2>固定评测集</h2>
+                <p>使用同一组 14 个问题验证召回、重排和回答/拒答门控。</p>
+            </div>
+            <div class="evaluation-actions">
+                <label for="evaluation-kb">知识库</label>
+                <select id="evaluation-kb"></select>
+                <button id="run-evaluation-button" class="primary-button" type="button">开始评测</button>
+            </div>
+        </header>
+
+        <div class="evaluation-content">
+            <section class="metric-grid" aria-label="评测指标">
+                <article class="metric-card">
+                    <span>评测题数</span>
+                    <strong id="metric-total">14</strong>
+                    <small>固定用例</small>
+                </article>
+                <article class="metric-card">
+                    <span>Hit@3</span>
+                    <strong id="metric-hit">—</strong>
+                    <small>来源命中率</small>
+                </article>
+                <article class="metric-card">
+                    <span>决策准确率</span>
+                    <strong id="metric-accuracy">—</strong>
+                    <small>回答 / 拒答</small>
+                </article>
+                <article class="metric-card">
+                    <span>检索配置</span>
+                    <strong id="metric-config">6 → 3</strong>
+                    <small>候选 → 最终证据</small>
+                </article>
+            </section>
+
+            <section class="evaluation-table-card panel-card">
+                <div class="card-heading">
+                    <div>
+                        <span class="card-kicker">RESULTS</span>
+                        <h3>逐题结果</h3>
+                    </div>
+                    <span id="evaluation-status" class="muted-label">等待运行</span>
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>问题</th>
+                            <th>最近距离</th>
+                            <th>Hit@3</th>
+                            <th>决策</th>
+                            <th>召回文档</th>
+                        </tr>
+                        </thead>
+                        <tbody id="evaluation-results">
+                        <tr><td colspan="6" class="table-empty">选择知识库后运行评测</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
-    </form>
+    </section>
+    </section>
 </main>
 
-<script src="/app.js"></script>
+<section id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <span class="brand-mark">AI</span>
+            <div>
+                <strong>企业知识库智能 Agent</strong>
+                <span>登录后使用全部能力</span>
+            </div>
+        </div>
+
+        <div class="auth-tabs" role="tablist">
+            <button class="auth-tab active" type="button" data-auth-tab="login">登录</button>
+            <button class="auth-tab" type="button" data-auth-tab="register">注册</button>
+        </div>
+
+        <form id="login-form" class="auth-form active">
+            <label>邮箱<input id="login-email" type="email" required autocomplete="email" placeholder="name@example.com"></label>
+            <label>密码<input id="login-password" type="password" required autocomplete="current-password" placeholder="输入密码"></label>
+            <button class="primary-button auth-submit" type="submit">登录并进入工作台</button>
+        </form>
+
+        <form id="register-form" class="auth-form">
+            <label>显示名称<input id="register-name" type="text" maxlength="100" required autocomplete="name" placeholder="你的名称"></label>
+            <label>邮箱<input id="register-email" type="email" required autocomplete="email" placeholder="name@example.com"></label>
+            <label>密码<input id="register-password" type="password" minlength="8" maxlength="72" required autocomplete="new-password" placeholder="8—72 个字符"></label>
+            <button class="primary-button auth-submit" type="submit">注册并进入工作台</button>
+        </form>
+
+        <button id="guest-button" class="guest-button" type="button">先体验临时流式对话</button>
+        <p id="auth-error" class="auth-error" role="alert"></p>
+    </div>
+</section>
+
+<dialog id="create-session-dialog" class="app-dialog">
+    <form id="create-session-form" method="dialog">
+        <div class="dialog-heading"><h3>新建 Agent 会话</h3><button type="button" data-close-dialog="create-session-dialog">×</button></div>
+        <p>会话会保存到 PostgreSQL，最近消息同时缓存在 Redis，并可调用工单工具。</p>
+        <label>会话标题<input id="session-title-input" type="text" maxlength="200" required placeholder="例如：客户支持助手"></label>
+        <button class="primary-button" type="submit">创建会话</button>
+    </form>
+</dialog>
+
+<dialog id="create-kb-dialog" class="app-dialog">
+    <form id="create-kb-form" method="dialog">
+        <div class="dialog-heading"><h3>新建知识库</h3><button type="button" data-close-dialog="create-kb-dialog">×</button></div>
+        <label>知识库名称<input id="kb-name-input" type="text" maxlength="100" required placeholder="例如：公司制度库"></label>
+        <label>描述<textarea id="kb-description-input" maxlength="2000" rows="3" placeholder="说明资料范围和用途"></textarea></label>
+        <button class="primary-button" type="submit">创建知识库</button>
+    </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="/workspace.js?v=1"></script>
 </body>
 </html>
-
