@@ -12,8 +12,9 @@
 - Ollama `bge-m3` 本地 Embedding，PostgreSQL `pgvector` HNSW 相似度检索。
 - 候选召回、距离过滤、混合重排、资料不足拒答和来源引用。
 - Redis 最近消息缓存，PostgreSQL 永久会话历史与缓存回填。
-- Spring AI Tool Calling：按用户查询、统计和二次确认创建工单。
-- BCrypt 密码、JWT 认证、知识库/会话/工单用户隔离和 Redis 限流。
+- Spring AI Tool Calling：使用服务端可信用户身份查询和统计当前用户工单。
+- 工单创建由 Java 解析信息并暂存 Redis，用户输入完整确认口令后才写入 PostgreSQL。
+- BCrypt 密码、JWT 认证、知识库/会话/工单用户隔离，以及登录后 Agent 会话的 Redis 用户限流。
 - 固定 RAG 评测集、请求追踪编号、统一异常响应和 Actuator 健康检查。
 
 ## 架构概览
@@ -49,14 +50,25 @@ Spring Security (JWT) -> Controller -> Service
 
 ### 1. 准备环境变量
 
-在项目根目录创建不会提交到 Git 的 `.env`：
+复制公开模板，在项目根目录创建不会提交到 Git 的 `.env`：
+
+```powershell
+Copy-Item .env.example .env
+```
+
+替换其中的占位值，至少需要配置：
 
 ```dotenv
 DEEPSEEK_API_KEY=你的API密钥
+POSTGRES_DB=enterprise_agent
+POSTGRES_USER=agent
+POSTGRES_PASSWORD=仅供本地开发使用的数据库密码
 JWT_SECRET=至少32字节且仅供当前环境使用的随机字符串
 ```
 
-不要把真实密钥写进 `application.yml`、截图、聊天或 Git。
+Docker Compose 会自动读取根目录 `.env`。Spring Boot 从 IDE 或 Maven 单独启动时不会自动读取该文件，必须通过进程环境变量或 IDE 启动配置传入相同值。
+
+不要把真实密钥写进 `application.yml`、截图、聊天、IDE共享配置或 Git。
 
 ### 2. 启动基础设施
 
@@ -67,9 +79,23 @@ docker compose exec ollama ollama pull bge-m3
 
 PostgreSQL、Redis 和 Ollama 数据分别保存在 Docker named volume 中，删除普通容器不会删除数据。
 
-### 3. 在 VS Code 启动 Java 应用
+### 3. 在本机启动 Java 应用
 
-打开 [EnterpriseAgentApplication.java](src/main/java/com/yan/agent/EnterpriseAgentApplication.java)，点击 `Run`。
+如果希望从 VS Code 点击 `Run`，请先在个人启动配置中设置以下环境变量，且不要提交该私人配置：
+
+- `DEEPSEEK_API_KEY`
+- `JWT_SECRET`
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+
+这些数据库配置必须与 `.env` 中供 Docker Compose 使用的值一致。然后打开 [EnterpriseAgentApplication.java](src/main/java/com/yan/agent/EnterpriseAgentApplication.java)，点击 `Run`。
+
+也可以在已设置相同进程环境变量的 PowerShell 中运行：
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
 
 可视化检查：
 
@@ -86,7 +112,7 @@ PostgreSQL、Redis 和 Ollama 数据分别保存在 Docker named volume 中，�
 .\mvnw.cmd test
 ```
 
-当前完整结果：21 个测试，0 失败，0 错误。
+当前源码包含 24 个 `@Test` 测试方法。仓库最近一次保留的 Surefire 测试报告生成于 2026-07-23，结果为 24 个测试、0 失败、0 错误；提交或部署前应在当前环境重新运行确认。
 
 ## 完整 Docker 运行
 
@@ -139,11 +165,6 @@ docker compose --profile application up -d --build
 - [架构与数据流](docs/ARCHITECTURE.md)
 - [Postman 演示脚本](docs/DEMO_GUIDE.md)
 - [RAG 固定评测集](docs/RAG_EVALUATION.md)
-- [简历描述与面试复盘](docs/RESUME_AND_INTERVIEW.md)
-- [7 日学习计划](docs/LEARNING_PLAN.md)
-- [每日总结](docs/DAILY_SUMMARY.md)
-- [错误记录](docs/ERROR_LOG.md)
-- [项目交接状态](docs/PROJECT_CONTEXT.md)
 
 ## 已知边界
 
