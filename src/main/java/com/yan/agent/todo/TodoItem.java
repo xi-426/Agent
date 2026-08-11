@@ -1,4 +1,4 @@
-package com.yan.agent.workorder;
+package com.yan.agent.todo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,14 +10,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "work_order")
-public class WorkOrder {
+@Table(name = "todo_item")
+public class TodoItem {
 
     public enum Status {
-        OPEN,
-        PROCESSING,
-        RESOLVED,
-        CLOSED
+        PENDING,
+        IN_PROGRESS,
+        COMPLETED,
+        CANCELLED
     }
 
     public enum Priority {
@@ -48,20 +48,15 @@ public class WorkOrder {
     @Column(nullable = false, length = 20)
     private Priority priority;
 
-    protected WorkOrder() {
+    protected TodoItem() {
     }
 
-    public WorkOrder(
-            Long userId,
-            String title,
-            String description,
-            Priority priority) {
-        // 保存创建工单所需字段，新工单状态固定为 OPEN。
+    public TodoItem(Long userId, String title, String description, Priority priority) {
         this.userId = userId;
         this.title = title;
         this.description = description;
         this.priority = priority;
-        this.status = Status.OPEN;
+        this.status = Status.PENDING;
     }
 
     public Long getId() {

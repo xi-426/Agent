@@ -9,6 +9,8 @@ public class DocumentProperties {
 
     private String storageRoot;
     private long maxSizeBytes;
+    private int maxBatchFiles;
+    private long maxBatchTotalSizeBytes;
     private int chunkSize;
     private int chunkOverlap;
 
@@ -26,6 +28,22 @@ public class DocumentProperties {
 
     public void setMaxSizeBytes(long maxSizeBytes) {
         this.maxSizeBytes = maxSizeBytes;
+    }
+
+    public int getMaxBatchFiles() {
+        return maxBatchFiles;
+    }
+
+    public void setMaxBatchFiles(int maxBatchFiles) {
+        this.maxBatchFiles = maxBatchFiles;
+    }
+
+    public long getMaxBatchTotalSizeBytes() {
+        return maxBatchTotalSizeBytes;
+    }
+
+    public void setMaxBatchTotalSizeBytes(long maxBatchTotalSizeBytes) {
+        this.maxBatchTotalSizeBytes = maxBatchTotalSizeBytes;
     }
 
     public int getChunkSize() {

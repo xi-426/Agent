@@ -12,6 +12,10 @@ data/
 
 data/uploads/
 
+# Personal source documents and local evaluation labels
+private-knowledge/
+local-evaluation-data/
+
 ### Local Codex instructions and private learning materials
 /AGENTS.md
 /.agents/
@@ -30,6 +34,10 @@ data/uploads/
 /docs/PROJECT_FLOW_TEACHING.svg
 /docs/项目面试准备.md
 /docs/个人项目网站素材准备清单.md
+/docs/个人项目网站项目展示资料.md
+/docs/个人项目网站完整素材清单.md
+/docs/知屿个人项目网站完整素材包.docx
+/docs/portfolio-assets/
 
 # Private local Docker Compose configuration
 /compose.local.yaml

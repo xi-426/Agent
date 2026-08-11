@@ -82,6 +82,7 @@ public class DocumentVectorRepository {
                 + "JOIN document d "
                 + "ON d.id = dc.document_id "
                 + "WHERE d.knowledge_base_id = ? "
+                + "AND d.status = 'READY' "
                 + "AND dc.embedding IS NOT NULL "
                 + "ORDER BY distance "
                 + "LIMIT ?";

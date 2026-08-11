@@ -32,7 +32,7 @@
 
   <rect width="1700" height="1180" fill="url(#background)"/>
 
-  <text x="70" y="62" class="title">企业知识库智能 Agent：完整数据流</text>
+  <text x="70" y="62" class="title">知屿 · 个人知识库助手：完整数据流</text>
   <text x="70" y="94" class="subtitle">绿色是入口与安全，蓝色是模型，紫色是存储，橙色是确定性写操作</text>
 
   <!-- Frontend and security -->
@@ -47,7 +47,7 @@
 
   <!-- Lane headers -->
   <rect x="70" y="286" width="500" height="54" rx="14" fill="#e8f2ff"/>
-  <text x="95" y="321" class="lane-title">A. Agent 会话与工单</text>
+  <text x="95" y="321" class="lane-title">A. Agent 会话与待办事项</text>
 
   <rect x="600" y="286" width="500" height="54" rx="14" fill="#eaf9f0"/>
   <text x="625" y="321" class="lane-title">B. 文档入库</text>
@@ -68,7 +68,7 @@
   <text x="95" y="615" class="box-copy">交给 DeepSeek 判断</text>
 
   <rect x="335" y="525" width="235" height="112" rx="18" fill="#fff7e9" stroke="#f0c77d" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="360" y="562" class="box-title">创建工单</text>
+  <text x="360" y="562" class="box-title">创建待办事项</text>
   <text x="360" y="590" class="box-copy">Java 解析标题/描述</text>
   <text x="360" y="615" class="box-copy">不让模型决定写操作</text>
 
@@ -83,7 +83,7 @@
   <rect x="335" y="692" width="235" height="120" rx="18" fill="#fff2df" stroke="#e9ad52" stroke-width="1.5" filter="url(#shadow)"/>
   <text x="360" y="730" class="box-title">Redis 待确认</text>
   <text x="360" y="758" class="box-copy">保存 10 分钟</text>
-  <text x="360" y="784" class="box-copy">等待“确认创建工单”</text>
+  <text x="360" y="784" class="box-copy">等待“确认创建待办”</text>
 
   <path d="M187 812 L187 858" class="line"/>
   <path d="M452 812 L452 858" class="line"/>
@@ -96,7 +96,7 @@
   <rect x="335" y="868" width="235" height="126" rx="18" fill="#fff2df" stroke="#e9ad52" stroke-width="1.5" filter="url(#shadow)"/>
   <text x="360" y="906" class="box-title">PostgreSQL INSERT</text>
   <text x="360" y="935" class="box-copy">完整口令后才创建</text>
-  <text x="360" y="961" class="box-copy">返回真实工单编号</text>
+  <text x="360" y="961" class="box-copy">返回真实待办事项编号</text>
 
   <!-- Ingestion lane -->
   <rect x="600" y="370" width="500" height="100" rx="18" class="card"/>
@@ -141,9 +141,9 @@
   <path d="M1380 637 L1380 682" class="line"/>
 
   <rect x="1130" y="692" width="500" height="120" rx="18" fill="#f0ebff" stroke="#bca9eb" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="1155" y="730" class="box-title">pgvector 召回 6 个候选</text>
-  <text x="1155" y="758" class="box-copy">distance ≤ 0.65 → 混合重排 → 最终 3 个证据</text>
-  <text x="1155" y="784" class="box-copy">80% 向量相似度 + 20% 中文二字组覆盖率</text>
+  <text x="1155" y="730" class="box-title">pgvector 按余弦距离召回 Top 8</text>
+  <text x="1155" y="758" class="box-copy">distance ≤ 0.3496 → 保留合格证据</text>
+  <text x="1155" y="784" class="box-copy">纯向量距离排序，不使用自定义重排</text>
   <path d="M1380 812 L1380 858" class="line"/>
 
   <rect x="1130" y="868" width="235" height="126" rx="18" fill="#eaf3ff" stroke="#9fc3ed" stroke-width="1.5" filter="url(#shadow)"/>

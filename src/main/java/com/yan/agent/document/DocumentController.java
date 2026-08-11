@@ -21,14 +21,17 @@ import java.util.List;
 public class DocumentController {
 
         private final DocumentIngestionService ingestionService;
+        private final DocumentBatchIngestionService batchIngestionService;
         private final KnowledgeBaseService knowledgeBaseService;
         private final KnowledgeDocumentRepository documentRepository;
 
         public DocumentController(
                         DocumentIngestionService ingestionService,
+                        DocumentBatchIngestionService batchIngestionService,
                         KnowledgeBaseService knowledgeBaseService,
                         KnowledgeDocumentRepository documentRepository) {
                 this.ingestionService = ingestionService;
+                this.batchIngestionService = batchIngestionService;
                 this.knowledgeBaseService = knowledgeBaseService;
                 this.documentRepository = documentRepository;
         }
@@ -56,6 +59,22 @@ public class DocumentController {
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
                                 .body(response);
+        }
+
+        @PostMapping(
+                        value = "/{knowledgeBaseId}/documents/batch",
+                        consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public BatchDocumentUploadResponse uploadDocuments(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long knowledgeBaseId,
+                        @RequestParam("files") List<MultipartFile> files) {
+                Number ownerIdClaim = jwt.getClaim("userId");
+                Long ownerId = ownerIdClaim.longValue();
+
+                return batchIngestionService.ingestBatch(
+                                ownerId,
+                                knowledgeBaseId,
+                                files);
         }
 
         @GetMapping("/{knowledgeBaseId}/documents")

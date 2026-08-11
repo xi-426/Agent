@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#07c160">
-    <title>企业知识库智能 Agent</title>
-    <link rel="stylesheet" href="/app.css?v=3">
+    <title>知屿 · 个人知识库助手</title>
+    <link rel="stylesheet" href="/app.css?v=4">
 </head>
 <body>
 <main class="wechat-app">
     <aside class="app-rail" aria-label="主导航">
-        <div class="brand-mark" aria-label="企业智能助手">AI</div>
+        <div class="brand-mark" aria-label="知屿个人知识库助手">知</div>
 
         <nav class="rail-nav">
             <button class="rail-button active" type="button" data-view="chat" aria-label="Agent 对话" title="Agent 对话">
@@ -44,7 +44,7 @@
     <aside class="conversation-panel">
         <header class="panel-header">
             <div>
-                <p id="panel-kicker" class="panel-kicker">ENTERPRISE AGENT</p>
+                <p id="panel-kicker" class="panel-kicker">ZHIYU AGENT</p>
                 <h1 id="panel-title">会话</h1>
             </div>
             <button id="new-resource-button" class="icon-button" type="button" aria-label="新建会话" title="新建会话">
@@ -90,9 +90,9 @@
             <article class="message-row assistant">
                 <span class="avatar avatar-agent" aria-hidden="true">智</span>
                 <div class="message-content">
-                    <span class="sender-name">企业知识助手</span>
+                    <span class="sender-name">知屿助手</span>
                     <div class="message-bubble">
-                        <p>你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用长期记忆、工单查询和二次确认创建。</p>
+                        <p>你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用长期记忆、待办查询和二次确认创建。</p>
                     </div>
                     <time>现在</time>
                 </div>
@@ -101,10 +101,10 @@
 
         <form id="chat-form" class="composer">
             <div id="agent-quick-actions" class="composer-toolbar">
-                <button class="quick-action" type="button" data-prompt="查询我的工单">查询我的工单</button>
+                <button class="quick-action" type="button" data-prompt="查询我的待办事项">查询我的待办</button>
                 <button class="quick-action" type="button"
-                        data-prompt="帮我创建一个高优先级工单，标题是“”，描述是“”。">创建工单</button>
-                <button class="quick-action" type="button" data-prompt="请记住，我今天正在学习企业知识库 Agent">测试记忆</button>
+                        data-prompt="帮我创建一个高优先级待办事项，标题是“”，描述是“”。">创建待办</button>
+                <button class="quick-action" type="button" data-prompt="请记住，我今天正在整理个人知识库">测试记忆</button>
             </div>
 
             <label class="sr-only" for="message">输入消息</label>
@@ -159,13 +159,14 @@
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 14v5h14v-5"/></svg>
                         </span>
                         <span>
-                            <strong id="file-label">选择 PDF、DOCX、TXT 或 Markdown</strong>
-                            <small>文件最大 10 MB，上传后自动解析、切片并向量化</small>
+                            <strong id="file-label">选择一个或多个个人资料</strong>
+                            <small>单次最多20个、总计50 MB；每个文件最大10 MB</small>
                         </span>
-                        <input id="document-file" type="file" required
-                               accept=".pdf,.docx,.txt,.md,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                        <input id="document-file" type="file" required multiple
+                               accept=".pdf,.doc,.docx,.txt,.md,text/plain,text/markdown,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
                     </label>
-                    <button id="upload-button" class="primary-button" type="submit">上传并处理</button>
+                    <button id="upload-button" class="primary-button" type="submit">批量上传并处理</button>
+                    <div id="upload-result" class="upload-result" aria-live="polite" hidden></div>
                 </form>
 
                 <div id="document-list" class="document-list"></div>
@@ -187,7 +188,7 @@
                 <form id="rag-form" class="rag-form">
                     <label class="sr-only" for="rag-question">知识库问题</label>
                     <textarea id="rag-question" maxlength="1000" required rows="2"
-                              placeholder="例如：L4 严格机密数据包括哪些内容？"></textarea>
+                              placeholder="例如：2025年研究生国家奖学金需要提交哪些材料？"></textarea>
                     <button id="rag-send-button" type="submit" aria-label="发送 RAG 问题">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4 14-3-5zM12 14l7-9"/></svg>
                     </button>
@@ -200,13 +201,15 @@
         <header class="workspace-header evaluation-header">
             <div>
                 <p class="workspace-kicker">RAG EVALUATION</p>
-                <h2>固定评测集</h2>
-                <p>使用同一组 14 个问题验证召回、重排和回答/拒答门控。</p>
+                <h2>知识库质量评测</h2>
+                <p>使用与你的真实资料对应的标注问题，校准检索和回答/拒答策略。</p>
             </div>
             <div class="evaluation-actions">
                 <label for="evaluation-kb">知识库</label>
                 <select id="evaluation-kb"></select>
-                <button id="run-evaluation-button" class="primary-button" type="button">开始评测</button>
+                <label for="evaluation-file">标注集</label>
+                <input id="evaluation-file" type="file" accept="application/json,.json">
+                <button id="run-evaluation-button" class="primary-button" type="button">开始校准</button>
             </div>
         </header>
 
@@ -214,11 +217,11 @@
             <section class="metric-grid" aria-label="评测指标">
                 <article class="metric-card">
                     <span>评测题数</span>
-                    <strong id="metric-total">14</strong>
-                    <small>固定用例</small>
+                    <strong id="metric-total">—</strong>
+                    <small>导入用例</small>
                 </article>
                 <article class="metric-card">
-                    <span>Hit@3</span>
+                    <span>来源命中</span>
                     <strong id="metric-hit">—</strong>
                     <small>来源命中率</small>
                 </article>
@@ -229,8 +232,8 @@
                 </article>
                 <article class="metric-card">
                     <span>检索配置</span>
-                    <strong id="metric-config">6 → 3</strong>
-                    <small>候选 → 最终证据</small>
+                    <strong id="metric-config">未校准</strong>
+                    <small>由真实评测确定</small>
                 </article>
             </section>
 
@@ -238,7 +241,7 @@
                 <div class="card-heading">
                     <div>
                         <span class="card-kicker">RESULTS</span>
-                        <h3>逐题结果</h3>
+                        <h3>校准集召回深度曲线</h3>
                     </div>
                     <span id="evaluation-status" class="muted-label">等待运行</span>
                 </div>
@@ -246,12 +249,12 @@
                     <table>
                         <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>问题</th>
-                            <th>最近距离</th>
-                            <th>Hit@3</th>
-                            <th>决策</th>
-                            <th>召回文档</th>
+                            <th>检索深度</th>
+                            <th>Hit@K</th>
+                            <th>Recall@K</th>
+                            <th>MRR@K</th>
+                            <th>nDCG@K</th>
+                            <th>配置选择</th>
                         </tr>
                         </thead>
                         <tbody id="evaluation-results">
@@ -270,8 +273,8 @@
         <div class="auth-brand">
             <span class="brand-mark">AI</span>
             <div>
-                <strong>企业知识库智能 Agent</strong>
-                <span>登录后使用全部能力</span>
+                <strong>知屿 · 个人知识库助手</strong>
+                <span>登录后整理、检索并询问你的资料</span>
             </div>
         </div>
 
@@ -301,8 +304,8 @@
 <dialog id="create-session-dialog" class="app-dialog">
     <form id="create-session-form" method="dialog">
         <div class="dialog-heading"><h3>新建 Agent 会话</h3><button type="button" data-close-dialog="create-session-dialog">×</button></div>
-        <p>会话会保存到 PostgreSQL，最近消息同时缓存在 Redis，并可调用工单工具。</p>
-        <label>会话标题<input id="session-title-input" type="text" maxlength="200" required placeholder="例如：客户支持助手"></label>
+        <p>会话会保存到 PostgreSQL，最近消息同时缓存在 Redis，并可调用待办工具。</p>
+        <label>会话标题<input id="session-title-input" type="text" maxlength="200" required placeholder="例如：学校资料整理"></label>
         <button class="primary-button" type="submit">创建会话</button>
     </form>
 </dialog>
@@ -310,7 +313,7 @@
 <dialog id="create-kb-dialog" class="app-dialog">
     <form id="create-kb-form" method="dialog">
         <div class="dialog-heading"><h3>新建知识库</h3><button type="button" data-close-dialog="create-kb-dialog">×</button></div>
-        <label>知识库名称<input id="kb-name-input" type="text" maxlength="100" required placeholder="例如：公司制度库"></label>
+        <label>知识库名称<input id="kb-name-input" type="text" maxlength="100" required placeholder="例如：我的学校资料库"></label>
         <label>描述<textarea id="kb-description-input" maxlength="2000" rows="3" placeholder="说明资料范围和用途"></textarea></label>
         <button class="primary-button" type="submit">创建知识库</button>
     </form>
@@ -318,6 +321,6 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="/workspace.js?v=1"></script>
+<script src="/workspace.js?v=3"></script>
 </body>
 </html>

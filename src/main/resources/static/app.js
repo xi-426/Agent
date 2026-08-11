@@ -23,7 +23,7 @@ function appendMessage(role, content, extraClass = "") {
 
     const senderName = document.createElement("span");
     senderName.className = "sender-name";
-    senderName.textContent = role === "user" ? "我" : "企业知识助手";
+    senderName.textContent = role === "user" ? "我" : "知屿助手";
 
     const bubble = document.createElement("div");
     bubble.className = "message-bubble";

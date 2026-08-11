@@ -15,7 +15,7 @@ WORKDIR /app
 RUN mkdir -p /app/data/uploads && chown -R 10001:0 /app
 
 COPY --from=build --chown=10001:0 \
-    /workspace/target/enterprise-agent-0.0.1-SNAPSHOT.jar \
+    /workspace/target/zhiyu-agent-0.0.1-SNAPSHOT.jar \
     /app/app.jar
 
 USER 10001

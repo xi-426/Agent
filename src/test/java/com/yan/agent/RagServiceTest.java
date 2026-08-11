@@ -3,7 +3,6 @@ package com.yan.agent;
 import com.yan.agent.chat.AiChatService;
 import com.yan.agent.document.KnowledgeRetrievalService;
 import com.yan.agent.document.KnowledgeBaseService;
-import com.yan.agent.document.HybridRerankerService;
 import com.yan.agent.document.RagResult;
 import com.yan.agent.document.RagService;
 import com.yan.agent.document.RetrievedChunk;
@@ -33,21 +32,16 @@ class RagServiceTest {
     @Mock
     private KnowledgeBaseService knowledgeBaseService;
 
-    private HybridRerankerService rerankerService;
-
     private RagService ragService;
 
     @BeforeEach
     void setUp() {
-        rerankerService = new HybridRerankerService();
         ragService = new RagService(
                 retrievalService,
                 knowledgeBaseService,
                 aiChatService,
-                rerankerService,
-                3,
-                6,
-                0.65);
+                8,
+                0.3495513922998467);
     }
 
     @Test
@@ -60,12 +54,12 @@ class RagServiceTest {
                 "数据安全规范.md",
                 0,
                 "客户数据必须加密保存。",
-                0.40);
+                0.30);
 
         when(retrievalService.retrieve(
                 1L,
                 question,
-                6))
+                8))
                 .thenReturn(List.of(acceptedChunk));
 
         when(aiChatService.chat(anyString()))
@@ -101,7 +95,7 @@ class RagServiceTest {
         when(retrievalService.retrieve(
                 1L,
                 question,
-                6))
+                8))
                 .thenReturn(List.of(farChunk));
 
         RagResult result = ragService.answer(

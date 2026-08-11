@@ -1,6 +1,6 @@
 spring:
   application:
-    name: enterprise-agent
+    name: zhiyu-agent
 
   datasource:
     url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/enterprise_agent}
@@ -44,7 +44,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-      max-request-size: 11MB
+      max-request-size: 55MB
 
 server:
   port: 8080
@@ -64,7 +64,7 @@ management:
 info:
   app:
     name: ${spring.application.name}
-    description: Enterprise knowledge base and work-order Agent
+    description: Personal knowledge base and todo Agent
     version: 0.0.1-SNAPSHOT
 
 logging:
@@ -77,19 +77,27 @@ logging:
 app:
   document:
     storage-root: ${DOCUMENT_STORAGE_ROOT:./data/uploads}
+    # Product safety limits, not RAG quality optima. See docs/PARAMETER_EVIDENCE.md.
     max-size-bytes: 10485760
+    max-batch-files: 20
+    max-batch-total-size-bytes: 52428800
+    # Selected from 17 real-corpus chunk configurations on 2026-08-10.
     chunk-size: 800
     chunk-overlap: 120
   rag:
-    top-k: 3
-    candidate-k: 6
-    max-distance: 0.65
+    # Calibrated on the local school-document validation split.
+    # Re-run calibration after changing the corpus, chunking or embedding model.
+    top-k: 8
+    max-distance: 0.3495513922998467
   chat-memory:
+    # Explicit product policy defaults; PostgreSQL remains the complete history source.
     max-messages: 20
     ttl-minutes: 1440
-  work-order:
+  todo-item:
+    # Explicit product policy for how long a pending confirmation stays valid.
     confirmation-ttl-minutes: 10
   security:
     jwt-secret: ${JWT_SECRET:local-development-jwt-secret-must-be-at-least-32-bytes}
+    # Explicit local-demo policies; not benchmark-derived values.
     jwt-ttl-minutes: 120
     max-chat-requests-per-minute: 20

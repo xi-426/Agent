@@ -27,15 +27,15 @@ class ApplicationSmokeTest {
         HttpResponse<String> healthResponse = get("/actuator/health");
 
         assertThat(homeResponse.statusCode()).isEqualTo(200);
-        assertThat(homeResponse.body()).contains("企业知识库智能 Agent");
+        assertThat(homeResponse.body()).contains("知屿 · 个人知识库助手");
         assertThat(homeResponse.body()).contains("workspace.js");
         assertThat(workspaceScriptResponse.statusCode()).isEqualTo(200);
         assertThat(workspaceScriptResponse.body())
-                .contains("EVALUATION_CASES")
+                .doesNotContain("EVALUATION_CASES")
                 .contains("/api/v1/chat/sessions")
                 .contains("/documents")
                 .contains("/rag/ask")
-                .contains("/evaluations/retrieval");
+                .contains("/evaluations/calibration");
         assertThat(healthResponse.statusCode()).isEqualTo(200);
         assertThat(healthResponse.body()).contains("UP");
     }

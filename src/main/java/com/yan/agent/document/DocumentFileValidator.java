@@ -14,7 +14,7 @@ import java.util.Set;
 public class DocumentFileValidator {
 
     private static final Set<String> ALLOWED_EXTENSIONS =
-            Set.of("pdf", "docx", "txt", "md", "markdown");
+            Set.of("pdf", "doc", "docx", "txt", "md", "markdown");
 
     private final DocumentProperties properties;
     private final Tika tika;
@@ -35,7 +35,9 @@ public class DocumentFileValidator {
 
         if (file.getSize() > properties.getMaxSizeBytes()) {
             throw new InvalidDocumentException(
-                    "上传文件不能超过10MB");
+                    "上传文件不能超过"
+                            + formatMegabytes(properties.getMaxSizeBytes())
+                            + "MB");
         }
 
         String originalName = file.getOriginalFilename();
@@ -49,7 +51,7 @@ public class DocumentFileValidator {
 
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
             throw new InvalidDocumentException(
-                    "只支持PDF、DOCX、TXT和Markdown文件");
+                    "只支持PDF、DOC、DOCX、TXT和Markdown文件");
         }
 
         String detectedType = detectContentType(
@@ -94,6 +96,11 @@ public class DocumentFileValidator {
         .equals(contentType);
         }
 
+        if ("doc".equals(extension)) {
+            return "application/msword".equals(contentType)
+                    || "application/x-tika-msoffice".equals(contentType);
+        }
+
         if ("txt".equals(extension)) {
             return "text/plain".equals(contentType);
         }
@@ -119,5 +126,9 @@ public class DocumentFileValidator {
         return fileName
                 .substring(dotIndex + 1)
                 .toLowerCase(Locale.ROOT);
+    }
+
+    private long formatMegabytes(long bytes) {
+        return bytes / 1024 / 1024;
     }
 }

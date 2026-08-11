@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
 
                 ApiError error = new ApiError(
                                 HttpStatus.PAYLOAD_TOO_LARGE.value(),
-                                "上传文件不能超过10MB");
+                                "上传请求过大：单文件最多10MB，批量文件总计最多50MB");
 
                 return ResponseEntity
                                 .status(HttpStatus.PAYLOAD_TOO_LARGE)

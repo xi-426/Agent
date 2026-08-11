@@ -4,7 +4,6 @@ import com.yan.agent.chat.AiChatService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,9 +13,7 @@ public class RagService {
 
         private final KnowledgeRetrievalService retrievalService;
         private final AiChatService aiChatService;
-        private final HybridRerankerService rerankerService;
         private final int topK;
-        private final int candidateK;
         private final double maxDistance;
         private final KnowledgeBaseService knowledgeBaseService;
 
@@ -24,16 +21,12 @@ public class RagService {
                         KnowledgeRetrievalService retrievalService,
                         KnowledgeBaseService knowledgeBaseService,
                         AiChatService aiChatService,
-                        HybridRerankerService rerankerService,
                         @Value("${app.rag.top-k}") int topK,
-                        @Value("${app.rag.candidate-k}") int candidateK,
                         @Value("${app.rag.max-distance}") double maxDistance) {
                 this.retrievalService = retrievalService;
                 this.knowledgeBaseService = knowledgeBaseService;
                 this.aiChatService = aiChatService;
-                this.rerankerService = rerankerService;
                 this.topK = topK;
-                this.candidateK = candidateK;
                 this.maxDistance = maxDistance;
         }
 
@@ -47,15 +40,11 @@ public class RagService {
                 List<RetrievedChunk> candidates = retrievalService.retrieve(
                                 knowledgeBaseId,
                                 question,
-                                candidateK);
+                                topK);
 
-                List<RetrievedChunk> acceptedChunks = new ArrayList<>();
-
-                for (RetrievedChunk chunk : candidates) {
-                        if (chunk.getDistance() <= maxDistance) {
-                                acceptedChunks.add(chunk);
-                        }
-                }
+                List<RetrievedChunk> acceptedChunks = candidates.stream()
+                                .filter(chunk -> chunk.getDistance() <= maxDistance)
+                                .toList();
 
                 if (acceptedChunks.isEmpty()) {
                         return new RagResult(
@@ -63,14 +52,9 @@ public class RagService {
                                         List.of());
                 }
 
-                List<RetrievedChunk> rerankedChunks = rerankerService.rerank(
-                                question,
-                                acceptedChunks,
-                                topK);
-
                 String prompt = buildPrompt(
                                 question,
-                                rerankedChunks);
+                                acceptedChunks);
 
                 String answer = aiChatService.chat(prompt);
 
@@ -82,7 +66,7 @@ public class RagService {
 
                 return new RagResult(
                                 answer,
-                                rerankedChunks);
+                                acceptedChunks);
         }
 
         private String buildPrompt(

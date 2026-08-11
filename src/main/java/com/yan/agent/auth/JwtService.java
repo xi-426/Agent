@@ -24,7 +24,7 @@ public class JwtService {
     public String createToken(AppUser user) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("enterprise-agent")
+                .issuer("zhiyu-agent")
                 .issuedAt(now)
                 .expiresAt(now.plus(tokenTtl))
                 .subject(user.getEmail())

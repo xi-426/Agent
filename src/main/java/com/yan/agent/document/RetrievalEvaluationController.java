@@ -15,30 +15,23 @@ import org.springframework.web.bind.annotation.RestController;
         "/api/v1/knowledge-bases/{knowledgeBaseId}/evaluations")
 public class RetrievalEvaluationController {
 
-    private final RetrievalEvaluationService evaluationService;
+    private final RagCalibrationService calibrationService;
 
     public RetrievalEvaluationController(
-            RetrievalEvaluationService evaluationService) {
-        this.evaluationService = evaluationService;
+            RagCalibrationService calibrationService) {
+        this.calibrationService = calibrationService;
     }
 
-    @PostMapping("/retrieval")
-    public ResponseEntity<RetrievalEvaluationResult>
-            evaluateRetrieval(
-                    @AuthenticationPrincipal Jwt jwt,
-                    @PathVariable Long knowledgeBaseId,
-                    @Valid @RequestBody
-                    RetrievalEvaluationRequest request) {
-
+    @PostMapping("/calibration")
+    public ResponseEntity<RagCalibrationResult> calibrate(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long knowledgeBaseId,
+            @Valid @RequestBody RagCalibrationRequest request) {
         Number ownerIdClaim = jwt.getClaim("userId");
-        Long ownerId = ownerIdClaim.longValue();
-
-        RetrievalEvaluationResult result =
-                evaluationService.evaluate(
-                        ownerId,
-                        knowledgeBaseId,
-                        request.cases());
-
+        RagCalibrationResult result = calibrationService.calibrate(
+                ownerIdClaim.longValue(),
+                knowledgeBaseId,
+                request);
         return ResponseEntity.ok(result);
     }
 }

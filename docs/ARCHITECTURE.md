@@ -7,7 +7,7 @@
 - `auth`：注册、登录、BCrypt 密码和 JWT。
 - `document`：知识库、文档入库、Embedding、检索、RAG 和评测。
 - `chat`：普通/流式对话、会话记忆、历史持久化和限流。
-- `workorder`：Spring AI 工具和需要确认的工单写操作。
+- `todo`：Spring AI 工具和需要确认的待办事项写操作。
 
 `Controller` 只接收 HTTP 参数，`Service` 编排业务，`Repository` 访问数据库。模型不能直接绕过 Service 修改数据库。
 
@@ -21,7 +21,7 @@ JWT 用户
   -> 保存原始文件
   -> Apache Tika 提取文字
   -> 清洗文字
-  -> 按 800 字符、120 重叠切片
+  -> 按实验选出的 800 字符、120 重叠切片
   -> Ollama bge-m3 生成 1024 维向量
   -> document_chunk.content + embedding 写入 PostgreSQL
   -> document.status = READY
@@ -35,10 +35,8 @@ JWT 用户
 问题
   -> 检查知识库所有权
   -> bge-m3 生成问题向量
-  -> pgvector HNSW 召回 6 个候选
-  -> 距离 <= 0.65
-  -> 80% 向量相似度 + 20% 中文二字组覆盖率重排
-  -> 保留 3 个切片
+  -> pgvector 按余弦距离升序取 Top 8
+  -> 只保留余弦距离 <= 0.3496 的切片
   -> 拼接带 [资料N] 编号的 Prompt
   -> DeepSeek 根据证据回答或固定拒答
   -> 返回 answer + sources
@@ -54,10 +52,10 @@ JWT 用户 + sessionId + 消息
   -> Redis 检查每分钟限流
   -> Redis 读取最近 20 条消息
      -> 缓存为空时从 PostgreSQL 回填
-  -> Spring AI 携带历史和 WorkOrderTools 调用 DeepSeek
-  -> 查询/统计工具可直接读取当前用户工单
+  -> Spring AI 携带历史和 TodoItemTools 调用 DeepSeek
+  -> 查询/统计工具可直接读取当前用户待办事项
   -> 创建工具只把内容暂存 Redis
-  -> 用户明确回复“确认创建工单”后才写 PostgreSQL
+  -> 用户明确回复“确认创建待办”后才写 PostgreSQL
   -> 本轮 USER/ASSISTANT 永久写 PostgreSQL 并追加 Redis
 ```
 
@@ -67,8 +65,8 @@ JWT 用户 + sessionId + 消息
 
 | 存储 | 保存内容 | 原因 |
 |---|---|---|
-| PostgreSQL | 用户、知识库、文档、切片、向量、会话历史、工单 | 需要长期保存、事务和关联约束 |
-| Redis | 最近消息、限流计数、待确认工单 | 访问快、允许过期、可从数据库恢复 |
+| PostgreSQL | 用户、知识库、文档、切片、向量、会话历史、待办事项 | 需要长期保存、事务和关联约束 |
+| Redis | 最近消息、限流计数、待确认待办事项 | 访问快、允许过期、可从数据库恢复 |
 | 文件目录/Volume | 上传的原始文件 | 便于解析和与结构化数据分离 |
 | DeepSeek | 当前请求的 Prompt 与回答 | 远程聊天模型，不作为业务数据库 |
 | Ollama | 本地 bge-m3 模型 | 本地生成向量，不保存业务记录 |
@@ -77,8 +75,8 @@ JWT 用户 + sessionId + 消息
 
 - BCrypt 只保存密码哈希。
 - 受保护接口从 JWT 读取 `userId`。
-- 知识库、会话和工单查询都包含用户所有权限制。
-- 创建工单属于写操作，必须二次确认。
+- 知识库、会话和待办事项查询都包含用户所有权限制。
+- 创建待办事项属于写操作，必须二次确认。
 - API 密钥通过环境变量提供，不写入仓库。
 - 日志只记录请求元数据和 `requestId`，不记录请求正文或认证头。
 
@@ -98,9 +96,11 @@ JWT 用户 + sessionId + 消息
 
 ## 8. 评测边界
 
-批量评测接口复用正式链路的 `candidateK=6`、距离阈值、混合重排和 `topK=3`，统计：
+先使用真实语料长度统计和文档级标签从 17 组方案中选择切片；固定切片后，校准接口再使用精确 chunk 标签的 `CALIBRATION` 数据选择 Top-K 和距离阈值，最后在隔离的 `TEST` 数据上报告：
 
-- `Hit@K`：期望文档是否出现在最终切片中。
-- `decisionAccuracy`：距离门控层的回答/拒答选择是否符合用例。
+- `Hit@K`、`Recall@K`、`MRR@K`、`nDCG@K` 和上下文精度。
+- `decisionAccuracy`、误接受率和误拒绝率。
 
-它不会批量调用 DeepSeek，以避免额外费用；最终答案是否引用正确、是否拒答仍需按演示脚本抽样验证。
+它不会批量调用 DeepSeek，以避免把检索指标和生成指标混在一起；答案忠实度、引用正确性等生成层质量需要单独评测。
+
+完整参数来源和实验聚合结果见 [参数证据表](PARAMETER_EVIDENCE.md)。

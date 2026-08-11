@@ -1,9 +1,9 @@
 package com.yan.agent.chat;
 
 import com.yan.agent.common.AiConfigurationException;
-import com.yan.agent.workorder.WorkOrderConfirmationService;
-import com.yan.agent.workorder.WorkOrderCreationParser;
-import com.yan.agent.workorder.WorkOrderTools;
+import com.yan.agent.todo.TodoItemConfirmationService;
+import com.yan.agent.todo.TodoItemCreationParser;
+import com.yan.agent.todo.TodoItemTools;
 
 import reactor.core.publisher.Flux;
 
@@ -22,15 +22,15 @@ import java.util.Map;
 public class AiChatService {
 
     private static final String PLACEHOLDER_API_KEY = "demo-key-not-configured";
-    private static final String CONFIRM_WORK_ORDER_COMMAND = "确认创建工单";
-    private static final String CANCEL_WORK_ORDER_COMMAND = "取消创建工单";
-    private static final String WORK_ORDER_SYSTEM_PROMPT = """
-            你是企业知识库与工单助手。
-            创建、新建或提交工单由 Java 程序在调用模型前处理。
-            你不得声称已经准备或已经创建工单。
-            只有用户完整输入“确认创建工单”后，Java 程序才会正式写入数据库；
+    private static final String CONFIRM_TODO_COMMAND = "确认创建待办";
+    private static final String CANCEL_TODO_COMMAND = "取消创建待办";
+    private static final String TODO_SYSTEM_PROMPT = """
+            你是“知屿”个人知识库与待办助手。
+            创建、新建或添加待办事项由 Java 程序在调用模型前处理。
+            你不得声称已经准备或已经创建待办事项。
+            只有用户完整输入“确认创建待办”后，Java 程序才会正式写入数据库；
             不得把“确认”“确认创建”等其他表达声称为创建成功。
-            查询和统计工单时必须调用对应工具，不得编造工单数据。
+            查询和统计待办事项时必须调用对应工具，不得编造待办数据。
             """;
 
     private final ChatClient chatClient;
@@ -38,9 +38,9 @@ public class AiChatService {
     private final ChatHistoryService historyService;
     private final ChatSessionService sessionService;
     private final ChatRateLimitService rateLimitService;
-    private final WorkOrderTools workOrderTools;
-    private final WorkOrderConfirmationService confirmationService;
-    private final WorkOrderCreationParser workOrderCreationParser;
+    private final TodoItemTools todoItemTools;
+    private final TodoItemConfirmationService confirmationService;
+    private final TodoItemCreationParser todoItemCreationParser;
     private final String apiKey;
 
     public AiChatService(
@@ -49,18 +49,18 @@ public class AiChatService {
             ChatHistoryService historyService,
             ChatSessionService sessionService,
             ChatRateLimitService rateLimitService,
-            WorkOrderTools workOrderTools,
-            WorkOrderConfirmationService confirmationService,
-            WorkOrderCreationParser workOrderCreationParser,
+            TodoItemTools todoItemTools,
+            TodoItemConfirmationService confirmationService,
+            TodoItemCreationParser todoItemCreationParser,
             @Value("${spring.ai.openai.api-key}") String apiKey) {
         this.chatClient = chatClient;
         this.memoryService = memoryService;
         this.historyService = historyService;
         this.sessionService = sessionService;
         this.rateLimitService = rateLimitService;
-        this.workOrderTools = workOrderTools;
+        this.todoItemTools = todoItemTools;
         this.confirmationService = confirmationService;
-        this.workOrderCreationParser = workOrderCreationParser;
+        this.todoItemCreationParser = todoItemCreationParser;
         this.apiKey = apiKey;
     }
 
@@ -97,7 +97,7 @@ public class AiChatService {
                 sessionId,
                 userId);
         rateLimitService.checkAllowed(userId);
-        String commandAnswer = handleWorkOrderCommand(
+        String commandAnswer = handleTodoCommand(
                 session,
                 userMessage);
 
@@ -109,7 +109,7 @@ public class AiChatService {
             return commandAnswer;
         }
 
-        String preparationAnswer = handleWorkOrderPreparation(
+        String preparationAnswer = handleTodoPreparation(
                 session,
                 userMessage);
 
@@ -143,28 +143,28 @@ public class AiChatService {
 
         ChatClient.ChatClientRequestSpec request = chatClient
                 .prompt()
-                .system(WORK_ORDER_SYSTEM_PROMPT)
+                .system(TODO_SYSTEM_PROMPT)
                 .messages(history)
                 .user(userMessage)
-                .tools(workOrderTools)
+                .tools(todoItemTools)
                 .toolContext(
                         Map.of(
-                                WorkOrderTools.USER_ID_CONTEXT_KEY,
+                                TodoItemTools.USER_ID_CONTEXT_KEY,
                                 session.getUserId(),
-                                WorkOrderTools.SESSION_ID_CONTEXT_KEY,
+                                TodoItemTools.SESSION_ID_CONTEXT_KEY,
                                 session.getId()));
 
         ChatClient.CallResponseSpec response = request.call();
 
         String answer = response.content();
 
-        if (answer.contains(CONFIRM_WORK_ORDER_COMMAND)
+        if (answer.contains(CONFIRM_TODO_COMMAND)
                 && !confirmationService.hasPending(
                         session.getUserId(),
                         session.getId())) {
             answer = """
-                    工单没有成功进入待确认状态，因此尚未创建。
-                    请重新发送完整的工单标题、描述和优先级；系统会在真正写入 Redis 后再要求确认。
+                    待办事项没有成功进入待确认状态，因此尚未创建。
+                    请重新发送完整的待办标题、描述和优先级；系统会在真正写入 Redis 后再要求确认。
                     """;
         }
 
@@ -177,13 +177,13 @@ public class AiChatService {
         return answer;
     }
 
-    private String handleWorkOrderCommand(
+    private String handleTodoCommand(
             ChatSession session,
             String userMessage) {
-        // 精确识别“确认创建工单”和“取消创建工单”；其他消息返回 null。
+        // 精确识别“确认创建待办”和“取消创建待办”；其他消息返回 null。
         String command = userMessage.trim();
 
-        if (CONFIRM_WORK_ORDER_COMMAND.equals(command)) {
+        if (CONFIRM_TODO_COMMAND.equals(command)) {
             return confirmationService.confirm(
                     session.getUserId(),
                     session.getId());
@@ -194,30 +194,30 @@ public class AiChatService {
             if (confirmationService.hasPending(
                     session.getUserId(),
                     session.getId())) {
-                return "为避免误操作，请回复完整的“确认创建工单”。";
+                return "为避免误操作，请回复完整的“确认创建待办”。";
             }
-            return "当前没有等待确认的工单，请先发送完整的创建要求。";
+            return "当前没有等待确认的待办事项，请先发送完整的创建要求。";
         }
 
-        if (CANCEL_WORK_ORDER_COMMAND.equals(command)) {
+        if (CANCEL_TODO_COMMAND.equals(command)) {
             confirmationService.cancel(
                     session.getUserId(),
                     session.getId());
 
-            return "已取消创建工单。";
+            return "已取消创建待办事项。";
         }
 
         return null;
     }
 
-    private String handleWorkOrderPreparation(
+    private String handleTodoPreparation(
             ChatSession session,
             String userMessage) {
-        if (!workOrderCreationParser.isCreateIntent(userMessage)) {
+        if (!todoItemCreationParser.isCreateIntent(userMessage)) {
             return null;
         }
 
-        return workOrderCreationParser.parse(userMessage)
+        return todoItemCreationParser.parse(userMessage)
                 .map(draft -> confirmationService.prepare(
                         session.getUserId(),
                         session.getId(),
@@ -225,9 +225,9 @@ public class AiChatService {
                         draft.description(),
                         draft.priority()))
                 .orElse("""
-                        创建工单需要完整的标题、描述和优先级。
+                        创建待办事项需要完整的标题、描述和优先级。
                         请按以下格式发送：
-                        帮我创建一个高优先级工单，标题是“标题内容”，描述是“详细描述”。
+                        帮我创建一个高优先级待办事项，标题是“标题内容”，描述是“详细描述”。
                         """);
     }
 

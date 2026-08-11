@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.yan</groupId>
-    <artifactId>enterprise-agent</artifactId>
+    <artifactId>zhiyu-agent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>enterprise-agent</name>
-    <description>Enterprise knowledge base and work-order Agent</description>
+    <name>zhiyu-agent</name>
+	<description>Personal knowledge base and todo Agent</description>
 
     <properties>
         <java.version>17</java.version>

@@ -3,29 +3,40 @@ package com.yan.agent;
 import com.yan.agent.document.DocumentTextExtractor;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DocumentTextExtractorTest {
 
     @Test
-    void shouldExtractTextFromMarkdownFile() {
+    void shouldExtractTextFromMarkdownFile() throws IOException {
 
         DocumentTextExtractor extractor =
                 new DocumentTextExtractor();
 
-        Path documentPath = Paths.get(
-                "sample-documents",
-                "00_公司治理与经营原则.md");
+        Path targetDirectory = Path.of("target", "test-generated");
+        Files.createDirectories(targetDirectory);
+        Path documentPath = Files.createTempFile(
+                targetDirectory,
+                "notes-",
+                ".md");
 
-        String extractedText =
-                extractor.extract(
-                        documentPath.toString());
+        try {
+            Files.writeString(
+                    documentPath,
+                    "# 课程通知\n\n奖学金材料请在截止日期前提交。");
 
-        assertThat(extractedText)
-                .contains("本项目虚构示例公司")
-                .contains("客户价值优先");
+            String extractedText = extractor.extract(
+                    documentPath.toString());
+
+            assertThat(extractedText)
+                    .contains("课程通知")
+                    .contains("奖学金材料请在截止日期前提交");
+        } finally {
+            Files.deleteIfExists(documentPath);
+        }
     }
 }
