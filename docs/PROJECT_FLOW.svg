@@ -143,7 +143,7 @@
   <rect x="1130" y="692" width="500" height="120" rx="18" fill="#f0ebff" stroke="#bca9eb" stroke-width="1.5" filter="url(#shadow)"/>
   <text x="1155" y="730" class="box-title">pgvector 按余弦距离召回 Top 8</text>
   <text x="1155" y="758" class="box-copy">distance ≤ 0.3496 → 保留合格证据</text>
-  <text x="1155" y="784" class="box-copy">纯向量距离排序，不使用自定义重排</text>
+  <text x="1155" y="784" class="box-copy">按 pgvector 余弦距离升序保留证据</text>
   <path d="M1380 812 L1380 858" class="line"/>
 
   <rect x="1130" y="868" width="235" height="126" rx="18" fill="#eaf3ff" stroke="#9fc3ed" stroke-width="1.5" filter="url(#shadow)"/>

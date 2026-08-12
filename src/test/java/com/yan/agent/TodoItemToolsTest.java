@@ -45,7 +45,7 @@ class TodoItemToolsTest {
                 new TodoItem(
                         7L,
                         "复习RAG流程",
-                        "整理检索、重排与拒答笔记",
+                        "整理检索、门控与拒答笔记",
                         TodoItem.Priority.HIGH));
 
         TodoItem second = todoItemRepository.save(

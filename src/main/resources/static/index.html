@@ -92,7 +92,7 @@
                 <div class="message-content">
                     <span class="sender-name">知屿助手</span>
                     <div class="message-bubble">
-                        <p>你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用长期记忆、待办查询和二次确认创建。</p>
+                        <p>你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用近期消息记忆、待办查询和二次确认创建。</p>
                     </div>
                     <time>现在</time>
                 </div>
@@ -182,7 +182,7 @@
                 </div>
 
                 <div id="rag-messages" class="rag-messages" aria-live="polite">
-                    <div class="rag-welcome">问题会先经过向量召回、距离过滤和重排，再交给模型回答。</div>
+                    <div class="rag-welcome">问题会先经过 Top 8 向量召回和余弦距离门控，再交给模型回答。</div>
                 </div>
 
                 <form id="rag-form" class="rag-form">

@@ -7,7 +7,7 @@
 ## 演示前准备
 
 1. Docker Desktop 中确认 `postgres`、`redis`、`ollama` 为运行状态。
-2. VS Code 启动 `EnterpriseAgentApplication`。
+2. VS Code 启动 `ZhiyuAgentApplication`。
 3. 浏览器打开 `/actuator/health`，确认 `status` 为 `UP`。
 4. Postman Environment 准备变量：`baseUrl=http://localhost:8080`、`tokenA`、`tokenB`、`knowledgeBaseId`、`sessionId`。
 5. 使用 `sample-documents/` 中的虚构资料，不上传真实客户数据或密钥。

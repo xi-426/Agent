@@ -105,27 +105,27 @@ CREATE TABLE chat_message (
 CREATE INDEX idx_chat_message_session_id
     ON chat_message (session_id);
 
-CREATE TABLE work_order (
+CREATE TABLE todo_item (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     title VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     priority VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_work_order_user
+    CONSTRAINT fk_todo_item_user
         FOREIGN KEY (user_id)
         REFERENCES app_user (id)
         ON DELETE CASCADE,
-    CONSTRAINT ck_work_order_status
-        CHECK (status IN ('OPEN', 'PROCESSING', 'RESOLVED', 'CLOSED')),
-    CONSTRAINT ck_work_order_priority
+    CONSTRAINT ck_todo_item_status
+        CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')),
+    CONSTRAINT ck_todo_item_priority
         CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'URGENT'))
 );
 
-CREATE INDEX idx_work_order_user_id
-    ON work_order (user_id);
+CREATE INDEX idx_todo_item_user_id
+    ON todo_item (user_id);
 
-CREATE INDEX idx_work_order_status
-    ON work_order (status);
+CREATE INDEX idx_todo_item_status
+    ON todo_item (status);

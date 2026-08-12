@@ -4,10 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class EnterpriseAgentApplication {
+public class ZhiyuAgentApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(EnterpriseAgentApplication.class, args);
+        SpringApplication.run(ZhiyuAgentApplication.class, args);
     }
 }
-

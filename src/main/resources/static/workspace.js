@@ -10,6 +10,8 @@ const state = {
     evaluationRequest: null
 };
 
+const AUTH_STORAGE_KEY = "zhiyu-agent-auth";
+
 const elements = {
     authScreen: document.querySelector("#auth-screen"),
     authError: document.querySelector("#auth-error"),
@@ -74,14 +76,14 @@ let toastTimer;
 
 function readStoredAuth() {
     try {
-        const auth = JSON.parse(localStorage.getItem("enterprise-agent-auth"));
+        const auth = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY));
         if (!auth?.accessToken || (auth.expiresAt && auth.expiresAt <= Date.now())) {
-            localStorage.removeItem("enterprise-agent-auth");
+            localStorage.removeItem(AUTH_STORAGE_KEY);
             return null;
         }
         return auth;
     } catch {
-        localStorage.removeItem("enterprise-agent-auth");
+        localStorage.removeItem(AUTH_STORAGE_KEY);
         return null;
     }
 }
@@ -91,7 +93,7 @@ function storeAuth(response) {
         ...response,
         expiresAt: Date.now() + response.expiresInSeconds * 1000
     };
-    localStorage.setItem("enterprise-agent-auth", JSON.stringify(state.auth));
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state.auth));
 }
 
 function clearAuth() {
@@ -101,7 +103,7 @@ function clearAuth() {
     state.documents = [];
     state.selectedSessionId = null;
     state.selectedKnowledgeBaseId = null;
-    localStorage.removeItem("enterprise-agent-auth");
+    localStorage.removeItem(AUTH_STORAGE_KEY);
 }
 
 async function api(path, options = {}) {
@@ -341,7 +343,7 @@ async function selectSession(sessionId) {
     if (sessionId === null) {
         elements.chatTitle.textContent = "临时流式对话";
         elements.chatSubtitle.innerHTML = "<i></i>无需登录 · 不保存记录";
-        resetChatMessages("你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用长期记忆、待办查询和二次确认创建。");
+        resetChatMessages("你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用近期消息记忆、待办查询和二次确认创建。");
         return;
     }
 
@@ -505,7 +507,7 @@ async function selectKnowledgeBase(knowledgeBaseId) {
     elements.knowledgeTitle.textContent = knowledgeBase.name;
     elements.knowledgeDescription.textContent = knowledgeBase.description || "暂无描述";
     elements.knowledgeIdBadge.textContent = `知识库 #${knowledgeBase.id}`;
-    elements.ragMessages.innerHTML = '<div class="rag-welcome">问题会先经过向量召回、距离过滤和重排，再交给模型回答。</div>';
+    elements.ragMessages.innerHTML = '<div class="rag-welcome">问题会先经过 Top 8 向量召回和余弦距离门控，再交给模型回答。</div>';
     await loadDocuments();
 }
 

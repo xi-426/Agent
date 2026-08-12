@@ -3,7 +3,7 @@ spring:
     name: zhiyu-agent
 
   datasource:
-    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/enterprise_agent}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/zhiyu_agent}
     username: ${POSTGRES_USER:agent}
     password: ${POSTGRES_PASSWORD:agent_local_password}
 
