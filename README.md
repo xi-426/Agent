@@ -2,6 +2,10 @@
 
 > 一个面向个人资料管理的 Java + AI 应用：上传 PDF、DOC、DOCX、TXT 或 Markdown 后，系统从用户自己的知识库检索证据，基于证据回答并展示来源；资料不足时明确拒答。
 
+## 项目总览
+
+![知屿登录后的完整工作台](docs/readme-assets/todo-confirmation.png)
+
 ## 这个项目做了什么
 
 知屿把“资料入库、带来源问答、对话记忆和待办助手”放在同一个 Web 工作台中：
@@ -21,12 +25,6 @@
 系统从已上传资料中检索证据，答案中的资料编号与下方来源卡片对应，并展示文档、切片和余弦距离。
 
 ![RAG 带来源回答](docs/readme-assets/rag-answer-with-sources.png)
-
-### 待办二次确认
-
-创建请求先被解析为 Redis 临时草稿；只有用户输入完整确认口令后，才会正式写入 PostgreSQL 并返回待办编号。
-
-![待办二次确认](docs/readme-assets/todo-confirmation.png)
 
 ### 资料不足拒答
 
