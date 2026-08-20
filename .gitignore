@@ -2,6 +2,7 @@
 .vscode/
 target/
 .m2-cache/
+tmp/
 *.iml
 .env
 logs/
@@ -38,6 +39,7 @@ local-evaluation-data/
 /docs/个人项目网站完整素材清单.md
 /docs/知屿个人项目网站完整素材包.docx
 /docs/portfolio-assets/
+/docs/PROJECT_TEACHING_GUIDE.md
 
 # Private local Docker Compose configuration
 /compose.local.yaml

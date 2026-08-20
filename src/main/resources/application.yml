@@ -81,7 +81,8 @@ app:
     max-size-bytes: 10485760
     max-batch-files: 20
     max-batch-total-size-bytes: 52428800
-    # Selected from 17 real-corpus chunk configurations on 2026-08-10.
+    # Retained after the 2026-08-20 pure-vector 17-configuration experiment:
+    # same calibration Hit@3/Hit@8 as the MRR leader, with 46.7% less Top8 context.
     chunk-size: 800
     chunk-overlap: 120
   rag:

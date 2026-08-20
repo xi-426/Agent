@@ -68,10 +68,10 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/api/v1/auth/**", "/api/v1/hello",
+                                "/api/v1/auth/**",
                                 "/api/v1/chat", "/api/v1/chat/stream",
                                 "/actuator/health", "/", "/index.html",
-                                "/app.js", "/workspace.js", "/app.css",
+                                "/workspace.js", "/app.css",
                                 "/favicon.ico")
                         .permitAll()
                         .anyRequest().authenticated())

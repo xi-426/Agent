@@ -7,4 +7,11 @@ data
 logs
 docs
 sample-documents
+private-knowledge
+local-evaluation-data
+tmp
+.m2-cache
+.agents
+AGENTS.md
+compose.local.yaml
 *.iml

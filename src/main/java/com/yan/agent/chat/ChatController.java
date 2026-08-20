@@ -130,9 +130,4 @@ public class ChatController {
         return chatService.streamChat(request.getMessage());
     }
 
-    @GetMapping("/hello")
-    public String health() {
-        return "Agent项目已启动";
-    }
-
 }

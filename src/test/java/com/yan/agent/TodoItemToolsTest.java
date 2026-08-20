@@ -41,29 +41,33 @@ class TodoItemToolsTest {
 
     @Test
     void shouldQueryAndCountOnlyCurrentUsersPendingTodoItems() {
+        AppUser user = userRepository.save(new AppUser(
+                "todo-query-" + UUID.randomUUID() + "@example.com",
+                "待办查询测试用户",
+                "test-password-hash"));
         TodoItem first = todoItemRepository.save(
                 new TodoItem(
-                        7L,
+                        user.getId(),
                         "复习RAG流程",
                         "整理检索、门控与拒答笔记",
                         TodoItem.Priority.HIGH));
 
         TodoItem second = todoItemRepository.save(
                 new TodoItem(
-                        7L,
+                        user.getId(),
                         "准备项目演示",
                         "验证上传、问答和来源展示",
                         TodoItem.Priority.MEDIUM));
 
         ToolContext toolContext = new ToolContext(
-                Map.of(TodoItemTools.USER_ID_CONTEXT_KEY, 7L));
+                Map.of(TodoItemTools.USER_ID_CONTEXT_KEY, user.getId()));
 
         List<TodoItem> results = todoItemTools.queryTodoItemsByStatus(
                 TodoItem.Status.PENDING,
                 toolContext);
 
         long expectedCount = todoItemRepository.countByUserIdAndStatus(
-                7L,
+                user.getId(),
                 TodoItem.Status.PENDING);
 
         long toolCount = todoItemTools.countTodoItemsByStatus(
@@ -83,16 +87,13 @@ class TodoItemToolsTest {
         ChatSession session = sessionService.create(
                 user.getId(),
                 "待办确认测试会话");
-        ToolContext toolContext = new ToolContext(
-                Map.of(
-                        TodoItemTools.USER_ID_CONTEXT_KEY, user.getId(),
-                        TodoItemTools.SESSION_ID_CONTEXT_KEY, session.getId()));
 
-        String prepareResult = todoItemTools.prepareCreateTodoItem(
+        String prepareResult = confirmationService.prepare(
+                user.getId(),
+                session.getId(),
                 "复习RAG流程",
                 "验证待办二次确认",
-                TodoItem.Priority.HIGH,
-                toolContext);
+                TodoItem.Priority.HIGH);
 
         assertThat(prepareResult).contains("确认创建待办");
         assertThat(confirmationService.hasPending(user.getId(), session.getId())).isTrue();
@@ -101,7 +102,9 @@ class TodoItemToolsTest {
 
         assertThat(confirmResult).contains("待办事项创建成功");
         assertThat(confirmationService.hasPending(user.getId(), session.getId())).isFalse();
-        assertThat(todoItemRepository.findByUserIdOrderByIdDesc(user.getId()))
+        assertThat(todoItemRepository.findByUserIdAndStatusOrderByIdDesc(
+                user.getId(),
+                TodoItem.Status.PENDING))
                 .extracting(TodoItem::getTitle)
                 .containsExactly("复习RAG流程");
     }

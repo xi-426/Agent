@@ -150,9 +150,7 @@ public class AiChatService {
                 .toolContext(
                         Map.of(
                                 TodoItemTools.USER_ID_CONTEXT_KEY,
-                                session.getUserId(),
-                                TodoItemTools.SESSION_ID_CONTEXT_KEY,
-                                session.getId()));
+                                session.getUserId()));
 
         ChatClient.CallResponseSpec response = request.call();
 

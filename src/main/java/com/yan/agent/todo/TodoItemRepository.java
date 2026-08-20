@@ -6,8 +6,6 @@ import java.util.List;
 
 public interface TodoItemRepository extends JpaRepository<TodoItem, Long> {
 
-    List<TodoItem> findByUserIdOrderByIdDesc(Long userId);
-
     List<TodoItem> findByUserIdAndStatusOrderByIdDesc(
             Long userId,
             TodoItem.Status status);
