@@ -17,7 +17,6 @@ const elements = {
     authError: document.querySelector("#auth-error"),
     loginForm: document.querySelector("#login-form"),
     registerForm: document.querySelector("#register-form"),
-    guestButton: document.querySelector("#guest-button"),
     accountButton: document.querySelector("#account-button"),
     currentUserLabel: document.querySelector("#current-user-label"),
     railButtons: document.querySelectorAll(".rail-button[data-view]"),
@@ -163,7 +162,7 @@ function renderUserState() {
         elements.accountButton.title = "退出登录";
         elements.accountButton.setAttribute("aria-label", "退出登录");
     } else {
-        elements.currentUserLabel.textContent = "游客模式 · 点击设置登录";
+        elements.currentUserLabel.textContent = "请先登录";
         elements.accountButton.title = "登录";
         elements.accountButton.setAttribute("aria-label", "登录");
     }
@@ -231,7 +230,7 @@ function renderSidebar() {
         elements.sidebarList.append(createSidebarItem({
             id: null,
             title: "临时流式对话",
-            subtitle: "无需登录，不保存记录",
+            subtitle: "需登录，不保存记录",
             avatar: "流",
             avatarClass: "avatar-agent",
             active: state.selectedSessionId === null,
@@ -342,8 +341,8 @@ async function selectSession(sessionId) {
     renderSidebar();
     if (sessionId === null) {
         elements.chatTitle.textContent = "临时流式对话";
-        elements.chatSubtitle.innerHTML = "<i></i>无需登录 · 不保存记录";
-        resetChatMessages("你好！当前是临时流式对话。登录后新建 Agent 会话，即可使用近期消息记忆、待办查询和二次确认创建。");
+        elements.chatSubtitle.innerHTML = "<i></i>需登录 · 不保存记录";
+        resetChatMessages("你好！这是登录后的临时流式对话，不保存会话记录。新建 Agent 会话后可使用近期消息记忆、待办查询和二次确认创建。");
         return;
     }
 
@@ -429,9 +428,16 @@ function readSseEvent(eventText) {
 }
 
 async function streamPublicMessage(message, onChunk) {
+    if (!state.auth?.accessToken) {
+        showAuthScreen();
+        throw new Error("请先登录后再使用模型对话");
+    }
     const response = await fetch("/api/v1/chat/stream", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${state.auth.accessToken}`
+        },
         body: JSON.stringify({message})
     });
     if (!response.ok) {
@@ -718,12 +724,6 @@ function bindEvents() {
             email: document.querySelector("#register-email").value.trim(),
             password: document.querySelector("#register-password").value
         }, event.submitter);
-    });
-
-    elements.guestButton.addEventListener("click", () => {
-        hideAuthScreen();
-        switchView("chat");
-        selectSession(null);
     });
 
     elements.accountButton.addEventListener("click", () => {

@@ -122,6 +122,7 @@ Java 解析标题、描述和优先级
 
 - 浏览器传入的知识库 ID、会话 ID 都不代表授权，Service 必须同时校验 JWT 用户和资源所有者。
 - 模型只理解语言和选择只读工具；用户身份、写操作确认和数据库边界由 Java 控制。
+- 普通与流式模型接口也要求 JWT，并按当前用户执行 Redis 每分钟限流，避免匿名请求消耗模型额度。
 - 完整聊天历史以 PostgreSQL 为事实源；Redis 缓存最近 20 条 message，缓存失效后从数据库回填。
 - 文档与问题必须使用同一个 Embedding 模型；更换模型后必须重新生成全部向量。
 - HNSW 索引已经创建，但当前只有 44 条向量，没有做性能 benchmark，因此不宣称具体提速倍数。
@@ -169,6 +170,8 @@ docker compose up -d
 |---|---|---|
 | POST | `/api/v1/auth/register` | 注册并返回 JWT |
 | POST | `/api/v1/auth/login` | 登录并返回 JWT |
+| POST | `/api/v1/chat` | 登录后的无记忆普通对话 |
+| POST | `/api/v1/chat/stream` | 登录后的无记忆 SSE 流式对话 |
 | GET / POST | `/api/v1/chat/sessions` | 查询或创建会话 |
 | POST | `/api/v1/chat/sessions/{sessionId}` | 带近期记忆和待办能力的 Agent 会话 |
 | GET / POST | `/api/v1/knowledge-bases` | 查询或创建知识库 |

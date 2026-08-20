@@ -1550,20 +1550,6 @@ td {
     margin-top: 3px;
 }
 
-.guest-button {
-    width: 100%;
-    margin-top: 10px;
-    padding: 9px;
-    background: transparent;
-    color: #888;
-    font-size: 11px;
-    cursor: pointer;
-}
-
-.guest-button:hover {
-    color: #07994d;
-}
-
 .auth-error {
     min-height: 16px;
     margin: 7px 0 0;

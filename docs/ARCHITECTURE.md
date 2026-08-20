@@ -54,12 +54,12 @@ JWT 用户 + sessionId + 消息
      -> 缓存为空时从 PostgreSQL 回填
   -> Spring AI 携带历史和 TodoItemTools 调用 DeepSeek
   -> 查询/统计工具可直接读取当前用户待办事项
-  -> 创建工具只把内容暂存 Redis
+  -> 创建意图由 Java 解析并把草稿暂存 Redis（不暴露创建 Tool）
   -> 用户明确回复“确认创建待办”后才写 PostgreSQL
   -> 本轮 USER/ASSISTANT 永久写 PostgreSQL 并追加 Redis
 ```
 
-`ToolContext` 中的 `userId` 和 `sessionId` 来自服务端 JWT 和已校验会话，不信任模型自己生成的用户编号。
+`ToolContext` 只注入来自服务端 JWT 和已校验会话的可信 `userId`。`sessionId` 只在 Java 会话编排与 Redis 草稿键中使用，不交给模型工具。
 
 ## 5. 数据职责
 
@@ -75,6 +75,7 @@ JWT 用户 + sessionId + 消息
 
 - BCrypt 只保存密码哈希。
 - 受保护接口从 JWT 读取 `userId`。
+- 普通与流式模型接口同样要求 JWT，并按用户执行 Redis 限流。
 - 知识库、会话和待办事项查询都包含用户所有权限制。
 - 创建待办事项属于写操作，必须二次确认。
 - API 密钥通过环境变量提供，不写入仓库。
@@ -96,7 +97,7 @@ JWT 用户 + sessionId + 消息
 
 ## 8. 评测边界
 
-先使用真实语料长度统计构造 17 组方案，并用文档级标签比较未经门控和重排的纯向量排名；综合命中、证据粒度和上下文成本保留 `800/120`。固定切片后，校准接口再使用精确 chunk 标签的 `CALIBRATION` 数据选择 Top-K 和距离阈值，最后在隔离的 `TEST` 数据上报告：
+先使用真实语料长度统计构造 17 组方案，并且只用 `CALIBRATION` 的文档级标签比较未经门控和重排的纯向量排名；综合命中、证据粒度和上下文成本锁定 `800/120`。锁定后 `TEST` 才首次参与且只评估该生产配置。固定切片后，校准接口再使用精确 chunk 标签选择 Top-K 和距离阈值，最后在隔离的 `TEST` 数据上报告：
 
 - `Hit@K`、`Recall@K`、`MRR@K`、`nDCG@K` 和上下文精度。
 - `decisionAccuracy`、误接受率和误拒绝率。

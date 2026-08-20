@@ -30,18 +30,25 @@ public class ChatController {
     private final AiChatService chatService;
     private final ChatSessionService sessionService;
     private final ChatHistoryService historyService;
+    private final ChatRateLimitService rateLimitService;
 
     public ChatController(
             AiChatService chatService,
             ChatSessionService sessionService,
-            ChatHistoryService historyService) {
+            ChatHistoryService historyService,
+            ChatRateLimitService rateLimitService) {
         this.chatService = chatService;
         this.sessionService = sessionService;
         this.historyService = historyService;
+        this.rateLimitService = rateLimitService;
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
+    public ResponseEntity<ChatResponse> chat(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ChatRequest request) {
+        Long userId = requireUserId(jwt);
+        rateLimitService.checkAllowed(userId);
         String answer = chatService.chat(request.getMessage());
         ChatResponse response = new ChatResponse(answer);
         return ResponseEntity.ok(response);
@@ -126,8 +133,17 @@ public class ChatController {
     // 表示相应类型为text/event-stream 也就是 SSE，中文可以理解为“服务器发送事件”。 SSE像保持一条运输通道，连接暂时不关→
     // 生成一个片段就发送一个片段→ 全部生成完成后才关闭连接
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> streamChat(@Valid @RequestBody ChatRequest request) {
+    public Flux<String> streamChat(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ChatRequest request) {
+        Long userId = requireUserId(jwt);
+        rateLimitService.checkAllowed(userId);
         return chatService.streamChat(request.getMessage());
+    }
+
+    private Long requireUserId(Jwt jwt) {
+        Number userIdClaim = jwt.getClaim("userId");
+        return userIdClaim.longValue();
     }
 
 }

@@ -59,6 +59,8 @@ class LocalPureVectorChunkingExperimentTest {
                     "school-rag-chunking-pure-vector-result.json");
     private static final int MAX_EVALUATION_K = 20;
     private static final int EMBEDDING_BATCH_SIZE = 16;
+    private static final ChunkConfiguration PRODUCTION_CONFIGURATION =
+            new ChunkConfiguration(800, 120);
 
     private static final List<ChunkConfiguration> CONFIGURATIONS = List.of(
             new ChunkConfiguration(400, 0),
@@ -100,7 +102,10 @@ class LocalPureVectorChunkingExperimentTest {
         validateDocumentLabels(evaluation.cases(), documentFiles.keySet());
 
         Map<Long, String> cleanedDocuments = loadAndCleanDocuments(documentFiles);
-        Map<String, float[]> questionEmbeddings = embedQuestions(evaluation.cases());
+        // 17 组配置比较阶段只准备 CALIBRATION 问题向量，TEST 此时完全不参与。
+        Map<String, float[]> calibrationQuestionEmbeddings = embedQuestions(
+                evaluation.cases(),
+                RagEvaluationSplit.CALIBRATION);
 
         List<ConfigurationResult> allResults = new ArrayList<>();
         for (ChunkConfiguration configuration : CONFIGURATIONS) {
@@ -110,12 +115,7 @@ class LocalPureVectorChunkingExperimentTest {
             SplitResult calibration = evaluateSplit(
                     RagEvaluationSplit.CALIBRATION,
                     evaluation.cases(),
-                    questionEmbeddings,
-                    chunks);
-            SplitResult test = evaluateSplit(
-                    RagEvaluationSplit.TEST,
-                    evaluation.cases(),
-                    questionEmbeddings,
+                    calibrationQuestionEmbeddings,
                     chunks);
             allResults.add(new ConfigurationResult(
                     configuration,
@@ -124,23 +124,55 @@ class LocalPureVectorChunkingExperimentTest {
                             .mapToInt(chunk -> chunk.content().length())
                             .average()
                             .orElse(0.0),
-                    calibration,
-                    test));
+                    calibration));
         }
 
-        ConfigurationResult selected = allResults.stream()
-                .max(selectionComparator())
+        ConfigurationResult bestByRankingMetrics = allResults.stream()
+                .max(rankingComparator())
+                .orElseThrow();
+        ConfigurationResult productionConfiguration = allResults.stream()
+                .filter(result -> result.configuration()
+                        .equals(PRODUCTION_CONFIGURATION))
+                .findFirst()
                 .orElseThrow();
 
+        // 生产配置已经锁定为 800/120 后，TEST 才首次参与实验，并且只评估这一组。
+        Map<String, float[]> testQuestionEmbeddings = embedQuestions(
+                evaluation.cases(),
+                RagEvaluationSplit.TEST);
+        List<EmbeddedChunk> productionChunks = createEmbeddedChunks(
+                PRODUCTION_CONFIGURATION,
+                cleanedDocuments);
+        SplitResult productionTest = evaluateSplit(
+                RagEvaluationSplit.TEST,
+                evaluation.cases(),
+                testQuestionEmbeddings,
+                productionChunks);
+
+        double contextReduction = 1.0
+                - productionConfiguration.calibration()
+                .at8().averageContextCharacters()
+                / bestByRankingMetrics.calibration()
+                .at8().averageContextCharacters();
+        String productionDecision = String.format(
+                "800/120与排名指标最佳的%d/%d在CALIBRATION上的Hit@3、Hit@8相同，"
+                        + "但Top8平均上下文字符减少约%.1f%%；因此保留800/120作为检索质量、证据粒度和Prompt成本之间的工程折中，而不是宣称它是唯一最优。",
+                bestByRankingMetrics.configuration().chunkSize(),
+                bestByRankingMetrics.configuration().overlap(),
+                contextReduction * 100.0);
+
         ExperimentResult result = new ExperimentResult(
-                "PURE_VECTOR_CHUNKING_V1",
-                "只使用CALIBRATION有答案题选择切片；不使用距离门控、Reranker、词法分数或聊天模型",
-                "先最大化MRR@20，再比较Hit@8、Hit@3；质量相同时选择Top8上下文字符更少、切片总数更少的配置",
+                "PURE_VECTOR_CHUNKING_V2",
+                "17组配置只使用CALIBRATION有答案题比较；锁定800/120后，TEST仅对该生产配置运行一次；全程不使用距离门控、Reranker、词法分数或聊天模型",
+                "排名指标先比较MRR@20，再比较Hit@8、Hit@3；它只产生bestByRankingMetrics，不直接替代包含上下文成本的生产决策",
                 "跨配置使用人工相关文档ID；chunk ID会随切片变化，因此不参与跨配置比较",
+                productionDecision,
                 CONFIGURATIONS.size(),
                 documentFiles.size(),
                 evaluation.cases().size(),
-                selected,
+                bestByRankingMetrics,
+                productionConfiguration,
+                productionTest,
                 List.copyOf(allResults));
 
         Files.createDirectories(OUTPUT_PATH.getParent());
@@ -148,8 +180,13 @@ class LocalPureVectorChunkingExperimentTest {
                 .writeValue(OUTPUT_PATH.toFile(), result);
 
         assertThat(allResults).hasSize(17);
-        assertThat(selected.calibration().answerableCases()).isEqualTo(24);
-        assertThat(selected.test().answerableCases()).isEqualTo(12);
+        assertThat(bestByRankingMetrics.configuration())
+                .isEqualTo(new ChunkConfiguration(1800, 65));
+        assertThat(bestByRankingMetrics.calibration().answerableCases())
+                .isEqualTo(24);
+        assertThat(productionConfiguration.configuration())
+                .isEqualTo(PRODUCTION_CONFIGURATION);
+        assertThat(productionTest.answerableCases()).isEqualTo(12);
     }
 
     private EmbeddingModel createEmbeddingModel() {
@@ -215,9 +252,11 @@ class LocalPureVectorChunkingExperimentTest {
     }
 
     private Map<String, float[]> embedQuestions(
-            List<RagCalibrationCase> cases) {
+            List<RagCalibrationCase> cases,
+            RagEvaluationSplit split) {
         List<RagCalibrationCase> answerableCases = cases.stream()
                 .filter(RagCalibrationCase::expectAnswer)
+                .filter(evaluationCase -> evaluationCase.split() == split)
                 .toList();
         List<float[]> embeddings = embedInBatches(
                 answerableCases.stream()
@@ -348,7 +387,7 @@ class LocalPureVectorChunkingExperimentTest {
         return 0;
     }
 
-    private Comparator<ConfigurationResult> selectionComparator() {
+    private Comparator<ConfigurationResult> rankingComparator() {
         return Comparator
                 .comparingDouble((ConfigurationResult result) ->
                         result.calibration().at20().mrr())
@@ -429,19 +468,21 @@ class LocalPureVectorChunkingExperimentTest {
             ChunkConfiguration configuration,
             int totalChunks,
             double averageChunkCharacters,
-            SplitResult calibration,
-            SplitResult test) {
+            SplitResult calibration) {
     }
 
     private record ExperimentResult(
             String experimentVersion,
             String isolationPolicy,
-            String selectionPolicy,
+            String rankingPolicy,
             String relevancePolicy,
+            String productionDecision,
             int configurationCount,
             int documentCount,
             int evaluationCaseCount,
-            ConfigurationResult selected,
-            List<ConfigurationResult> allResults) {
+            ConfigurationResult bestByRankingMetrics,
+            ConfigurationResult productionConfiguration,
+            SplitResult productionTest,
+            List<ConfigurationResult> allCalibrationResults) {
     }
 }
